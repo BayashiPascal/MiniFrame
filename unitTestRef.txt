@@ -1,0 +1,46 @@
+UnitTestMFTransitionCreateFree OK
+UnitTestMFTransitionIsExpandable OK
+UnitTestMFTransitionGetSet OK
+UnitTestMFTransition OK
+UnitTestMFWorldCreateFree OK
+UnitTestMFWorldGetSet OK
+UnitTestMFWorldComputeTransition OK
+UnitTestMFWorld OK
+UnitTestMiniFrameCreateFree OK
+UnitTestMiniFrameGetSet OK
+Time unused by MFExpand: 99.980003
+Time search world to expand: 100.000000
+Nb world expanded: 16
+Perc world reused: 0.625000
+Computed worlds:
+(step:3 pos:-3 tgt:2) values[-5.000000] forecast[-0.000100]
+  transition from (step:3 pos:-3 tgt:2) to (step:3 pos:-3 tgt:2) through (move:-1) values[-0.000150]
+  transition from (step:3 pos:-3 tgt:2) to (step:3 pos:-3 tgt:2) through (move:0) values[-0.000150]
+  transition from (step:3 pos:-3 tgt:2) to (step:2 pos:-2 tgt:2) through (move:1) values[-0.000100]
+(step:2 pos:-2 tgt:2) values[-4.000000] forecast[-0.000070]
+  transition from (step:2 pos:-2 tgt:2) to (step:3 pos:-3 tgt:2) through (move:-1) values[-0.000150]
+  transition from (step:2 pos:-2 tgt:2) to (step:2 pos:-2 tgt:2) through (move:0) values[-0.000100]
+  transition from (step:2 pos:-2 tgt:2) to (step:1 pos:-1 tgt:2) through (move:1) values[-0.000070]
+(step:1 pos:-1 tgt:2) values[-3.000000] forecast[-0.000040]
+  transition from (step:1 pos:-1 tgt:2) to (step:2 pos:-2 tgt:2) through (move:-1) values[-0.000100]
+  transition from (step:1 pos:-1 tgt:2) to (step:1 pos:-1 tgt:2) through (move:0) values[-0.000070]
+  transition from (step:1 pos:-1 tgt:2) to (step:0 pos:0 tgt:2) through (move:1) values[-0.000040]
+(step:0 pos:0 tgt:2) values[-2.000000] forecast[-0.000010]
+  transition from (step:0 pos:0 tgt:2) to (step:1 pos:-1 tgt:2) through (move:-1) values[-0.000070]
+  transition from (step:0 pos:0 tgt:2) to (step:0 pos:0 tgt:2) through (move:0) values[-0.000040]
+  transition from (step:0 pos:0 tgt:2) to (step:1 pos:1 tgt:2) through (move:1) values[-0.000010]
+(step:1 pos:1 tgt:2) values[-1.000000] forecast[0.000000]
+  transition from (step:1 pos:1 tgt:2) to (step:0 pos:0 tgt:2) through (move:-1) values[-0.000040]
+  transition from (step:1 pos:1 tgt:2) to (step:1 pos:1 tgt:2) through (move:0) values[-0.000010]
+  transition from (step:1 pos:1 tgt:2) to (step:2 pos:2 tgt:2) through (move:1) values[-0.000000]
+(step:2 pos:2 tgt:2) values[-0.000000] forecast[0.000000]
+Best action: 1
+UnitTestMiniFrameExpandSetCurWorld OK
+mf(step:0 pos:0 tgt:2) real(step:1 pos:1 tgt:2)
+mf(step:1 pos:1 tgt:2) real(step:2 pos:2 tgt:-1)
+mf(step:2 pos:2 tgt:-1) real(step:3 pos:1 tgt:-1)
+mf(step:3 pos:1 tgt:-1) real(step:4 pos:0 tgt:-1)
+mf(step:4 pos:0 tgt:-1) real(step:5 pos:-1 tgt:-1)
+UnitTestMiniFrameFullExample OK
+UnitTestMiniFrame OK
+UnitTestAll OK
