@@ -2,7 +2,7 @@
 # 0: development (max safety, no optimisation)
 # 1: release (min safety, optimisation)
 # 2: fast and furious (no safety, optimisation)
-BUILD_MODE?=1
+BUILD_MODE?=0
 
 all: main
 	
@@ -27,3 +27,4 @@ $($(repo)_EXENAME).o: \
 	
 miniframe-model.o: miniframe-model.h miniframe-model.c Makefile
 	$(COMPILER) $(BUILD_ARG) -c miniframe-model.c
+

@@ -13,6 +13,9 @@
 // ================= Include =================
 
 #include "miniframe-model.h"
+#if BUILDMODE == 0
+#include "miniframe-inline-model.c"
+#endif
 
 // ================ Functions implementation ====================
 

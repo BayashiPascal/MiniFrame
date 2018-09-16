@@ -18,6 +18,7 @@
 #include <string.h>
 #include <stdbool.h>
 #include <time.h>
+#include "../PBErr/pberr.h"
 
 // ================= Define ==================
 
@@ -119,3 +120,14 @@ bool MFModelStatusIsDisposable(const MFModelStatus* const that,
 // Return true if the MFModelStatus 'that' is the end of the 
 // game/simulation, else false
 bool MFModelStatusIsEnd(const MFModelStatus* const that);
+
+#if BUILDMODE != 0
+inline
+#endif
+void toto();
+
+// ================ Inliner ====================
+
+#if BUILDMODE != 0
+#include "miniframe-inline-model.c"
+#endif

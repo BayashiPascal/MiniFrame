@@ -485,9 +485,3 @@ const float* MFWorldValues(const MFWorld* const that) {
 #endif
   return that->_values;
 }
-
-
-
-
-// Include the model inlined functions
-#include "miniframe-inline-model.c"
