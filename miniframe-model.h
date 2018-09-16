@@ -10,6 +10,15 @@
 // The position of the actor is bounded to -5, 5
 // The value of the world is given by -abs(position-target)
 
+// ================= Include ==================
+
+#include <stdlib.h>
+#include <stdio.h>
+#include <math.h>
+#include <string.h>
+#include <stdbool.h>
+#include <time.h>
+
 // ================= Define ==================
 
 // Max number of actors in the world

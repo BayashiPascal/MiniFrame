@@ -21,7 +21,9 @@
 #define MF_DEFAULTTIMEEXPANSION 100
 // time_ms = clock() / MF_MILLISECTOCLOCKS
 #define MF_MILLISECTOCLOCKS (CLOCKS_PER_SEC * 0.001) 
-// User defined structs and functions to parameterize MiniFrame
+
+// =========== Interface with the model implementation =============
+
 #include "miniframe-model.h"
 
 // ================= Data structure ===================

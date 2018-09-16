@@ -13,10 +13,11 @@ include $(MAKEFILE_INC)
 # Rules to make the executable
 repo=miniframe
 $($(repo)_EXENAME): \
+		miniframe-model.o \
 		$($(repo)_EXENAME).o \
 		$($(repo)_EXE_DEP) \
 		$($(repo)_DEP)
-	$(COMPILER) `echo "$($(repo)_EXE_DEP) $($(repo)_EXENAME).o" | tr ' ' '\n' | sort -u` $(LINK_ARG) $($(repo)_LINK_ARG) -o $($(repo)_EXENAME) 
+	$(COMPILER) `echo "$($(repo)_EXE_DEP) $($(repo)_EXENAME).o" | tr ' ' '\n' | sort -u` miniframe-model.o $(LINK_ARG) $($(repo)_LINK_ARG) -o $($(repo)_EXENAME) 
 	
 $($(repo)_EXENAME).o: \
 		$($(repo)_DIR)/$($(repo)_EXENAME).c \
@@ -24,3 +25,5 @@ $($(repo)_EXENAME).o: \
 		$($(repo)_EXE_DEP)
 	$(COMPILER) $(BUILD_ARG) $($(repo)_BUILD_ARG) `echo "$($(repo)_INC_DIR)" | tr ' ' '\n' | sort -u` -c $($(repo)_DIR)/$($(repo)_EXENAME).c
 	
+miniframe-model.o: miniframe-model.h miniframe-model.c Makefile
+	$(COMPILER) $(BUILD_ARG) -c miniframe-model.c

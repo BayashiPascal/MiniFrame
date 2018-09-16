@@ -12,6 +12,8 @@
 
 // ================= Include =================
 
+#include "miniframe-model.h"
+
 // ================ Functions implementation ====================
 
 // Copy the properties of the MFModelStatus 'that' into the 

@@ -956,6 +956,3 @@ MFTransition* MFWorldPopSource(MFWorld* const that) {
   return GSetPop(&(that->_sources));
 }
 
-// Include the model functions
-#include "miniframe-model.c"
-
