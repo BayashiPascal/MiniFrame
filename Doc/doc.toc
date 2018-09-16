@@ -1,0 +1,10 @@
+\contentsline {section}{\numberline {1}Interface}{2}
+\contentsline {subsection}{\numberline {1.1}miniframe.h}{2}
+\contentsline {subsection}{\numberline {1.2}miniframe-model.h}{2}
+\contentsline {section}{\numberline {2}Code}{4}
+\contentsline {subsection}{\numberline {2.1}miniframe.c}{4}
+\contentsline {subsection}{\numberline {2.2}miniframe-inline.c}{20}
+\contentsline {subsection}{\numberline {2.3}miniframe-model.c}{28}
+\contentsline {section}{\numberline {3}Makefile}{32}
+\contentsline {section}{\numberline {4}Unit tests}{33}
+\contentsline {section}{\numberline {5}Unit tests output}{41}
