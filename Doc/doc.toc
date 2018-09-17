@@ -1,10 +1,20 @@
 \contentsline {section}{\numberline {1}Interface}{2}
 \contentsline {subsection}{\numberline {1.1}miniframe.h}{2}
-\contentsline {subsection}{\numberline {1.2}miniframe-model.h}{2}
-\contentsline {section}{\numberline {2}Code}{4}
-\contentsline {subsection}{\numberline {2.1}miniframe.c}{4}
-\contentsline {subsection}{\numberline {2.2}miniframe-inline.c}{20}
-\contentsline {subsection}{\numberline {2.3}miniframe-model.c}{28}
+\contentsline {section}{\numberline {2}Code}{8}
+\contentsline {subsection}{\numberline {2.1}miniframe.c}{8}
+\contentsline {subsection}{\numberline {2.2}miniframe-inline.c}{24}
 \contentsline {section}{\numberline {3}Makefile}{32}
 \contentsline {section}{\numberline {4}Unit tests}{33}
-\contentsline {section}{\numberline {5}Unit tests output}{41}
+\contentsline {section}{\numberline {5}Unit tests output}{40}
+\contentsline {section}{\numberline {6}Examples}{41}
+\contentsline {subsection}{\numberline {6.1}Basic example}{41}
+\contentsline {subsubsection}{\numberline {6.1.1}miniframe-model.h}{41}
+\contentsline {subsubsection}{\numberline {6.1.2}miniframe-model.c}{43}
+\contentsline {subsubsection}{\numberline {6.1.3}miniframe-inline-model.c}{48}
+\contentsline {subsection}{\numberline {6.2}Oware}{48}
+\contentsline {subsubsection}{\numberline {6.2.1}miniframe-model.h}{48}
+\contentsline {subsubsection}{\numberline {6.2.2}miniframe-model.c}{51}
+\contentsline {subsubsection}{\numberline {6.2.3}miniframe-inline-model.c}{57}
+\contentsline {subsubsection}{\numberline {6.2.4}main.c}{57}
+\contentsline {subsubsection}{\numberline {6.2.5}Makefile}{58}
+\contentsline {subsubsection}{\numberline {6.2.6}Example}{59}

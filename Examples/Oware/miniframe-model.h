@@ -1,15 +1,5 @@
 // ============ MINIFRAME_MODEL.H ================
 
-// As an example the code below implements a world where one actor
-// moves along a discrete axis by step of one unit to reach a fixed 
-// target position
-// Status of the world is defined by the current actor position and 
-// the target position
-// Available actions are -1, 0, +1 (next position = current position 
-// + action) if the actor hasn't reached the target, else no actions 
-// The position of the actor is bounded to -5, 5
-// The value of the world is given by -abs(position-target)
-
 // ================= Include ==================
 
 #include <stdlib.h>
@@ -18,30 +8,44 @@
 #include <string.h>
 #include <stdbool.h>
 #include <time.h>
-#include "../PBErr/pberr.h"
+#include "/home/bayashi/GitHub/PBErr/pberr.h"
 
 // ================= Define ==================
 
+// Current implementation doesn't allow more than 2 players
+// due to undefined end condition
+#define NBPLAYER 2
+#define NBHOLEPLAYER 6
+#define NBHOLE (NBHOLEPLAYER * NBPLAYER)
+#define NBINITSTONEPERHOLE 4
+#define NBSTONE (NBHOLE * NBINITSTONEPERHOLE)
+#define NBMAXTURN 500
+
 // Max number of actors in the world
 // must be at least one
-#define MF_NBMAXACTOR 1
+#define MF_NBMAXACTOR NBPLAYER
 // Max number of transitions possible from any given status
 // must be at least one
-#define MF_NBMAXTRANSITION 3
+#define MF_NBMAXTRANSITION NBHOLEPLAYER
 
 // ================= Data structure ===================
 
 // Structure describing the transition from one instance of 
 // MFModelStatus to another
 typedef struct MFModelTransition {
-  int _move;
+  // Index of the hole from where stones are moved by the current player
+  int _iHole;
 } MFModelTransition;
 
 // Structure describing the status of the world at one instant
 typedef struct MFModelStatus {
-  int _step;
-  int _pos;
-  int _tgt;
+  int _nbTurn;
+  int _nbStone[NBHOLE];
+  int _score[NBPLAYER];
+  // Flag for special end condition
+  char _end;
+  // Index of the player who has the sente
+  int _curPlayer;
 } MFModelStatus;
 
 // ================ Functions declaration ====================
@@ -120,6 +124,9 @@ bool MFModelStatusIsDisposable(const MFModelStatus* const that,
 // Return true if the MFModelStatus 'that' is the end of the 
 // game/simulation, else false
 bool MFModelStatusIsEnd(const MFModelStatus* const that);
+
+// Init the board
+void MFModelStatusInit(MFModelStatus* const that);
 
 #if BUILDMODE != 0
 inline

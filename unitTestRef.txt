@@ -8,7 +8,7 @@ UnitTestMFWorldComputeTransition OK
 UnitTestMFWorld OK
 UnitTestMiniFrameCreateFree OK
 UnitTestMiniFrameGetSet OK
-Time unused by MFExpand: 99.980003
+Time unused by MFExpand: 99.963997
 Time search world to expand: 100.000000
 Nb world expanded: 16
 Perc world reused: 0.625000

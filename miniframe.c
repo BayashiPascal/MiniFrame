@@ -12,6 +12,11 @@
 // Get the set of worlds to be expanded (having at least one transition
 // whose _toWorld is null) for the MiniFrame 'that'
 // Stop searching for world if clock() >= clockLimit
+// Will return at least one world even if clockLimit == current clock
+// The MiniFrame must have at least one world in its set of computed 
+// worlds
+// Force the current world to the end of the returned set to ensure
+// it will be the first to be expanded
 GSet MFGetWorldsToExpand(const MiniFrame* const that, 
   const clock_t clockLimit);
 
@@ -272,9 +277,6 @@ void MFExpand(MiniFrame* that) {
           // Set the already computed one as the result of the 
           // transition 
           MFWorldSetTransitionToWorld(worldToExpand, iTrans, sameWorld);
-//printf("  World reused: ");
-//MFWorldPrint(sameWorld, stdout);
-//printf("\n");
         }
       }
       // Update the total time used from beginning of expansion 
@@ -418,6 +420,8 @@ float MFTransitionGetPOVValue(const MFTransition* const that,
 // Will return at least one world even if clockLimit == current clock
 // The MiniFrame must have at least one world in its set of computed 
 // worlds
+// Force the current world to the end of the returned set to ensure
+// it will be the first to be expanded
 GSet MFGetWorldsToExpand(const MiniFrame* const that, 
   const clock_t clockLimit) {
 #if BUILDMODE == 0
@@ -439,13 +443,17 @@ GSet MFGetWorldsToExpand(const MiniFrame* const that,
   do {
     MFWorld* world = GSetIterGet(&iter);
     // If this world has transition to expand
-    if (MFWorldIsExpandable(world)) {
+    if (world != MFCurWorld(that) && MFWorldIsExpandable(world)) {
       // Add this world to the result set ordered by the value
       int sente = MFModelStatusGetSente(MFWorldStatus(world));
       float value = MFWorldGetPOVValue(world, sente);
       GSetAddSort(&set, world, value);
     }
   } while (GSetIterStep(&iter) && clock() < clockLimit);
+  // Add the current world
+  if (MFWorldIsExpandable(MFCurWorld(that))) {
+    GSetAppend(&set, MFCurWorld(that));
+  }
   // Return the set of worlds to expand
   return set;
 }
@@ -646,24 +654,28 @@ const MFModelTransition* MFGetBestTransition(
         float val = MFTransitionGetPOVValue(trans, iActor);
         // If the value is better
         if (valBestTrans < val) {
+          // Update the best value and best transition
           valBestTrans = val;
           bestTrans = trans;
         }
-      // Else its the first considered transition
+      // Else it's the first considered transition
       } else {
         // Init the best value with the value of this transition
         valBestTrans = MFTransitionGetPOVValue(trans, iActor);
-        // Init the index of the best transition
+        // Init the best transition
         bestTrans = trans;
       }
     }
   }
-  // Return the best transition
-  if (bestTrans != NULL)
-    return (const MFModelTransition*)bestTrans;
-  else {
-    return NULL;
+  // If the bestTrans is null here it means that none of the transitions
+  // for the current world were expanded yet
+  // By default choose a random one 
+  if (bestTrans == NULL && MFWorldGetNbTrans(curWorld) > 0) {
+    bestTrans = MFWorldTransition(curWorld, 
+      (int)floor(MIN(rnd(), 0.9999) * (float)MFWorldGetNbTrans(curWorld)));
   }
+  // Return the best transition
+  return (const MFModelTransition*)bestTrans;
 }
 
 // Update backward the forecast values for each transitions 

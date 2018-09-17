@@ -201,7 +201,7 @@ inline
 void MFSetStartExpandClock(MiniFrame* const that, clock_t c);
 
 // Set the time limit for expansion of the MiniFrame 'that' to 
-// 'timeLimit'
+// 'timeLimit', in millisecond
 // The time is measured with the function clock(), see "man clock"
 // for details
 #if BUILDMODE != 0
