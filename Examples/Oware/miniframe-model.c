@@ -7,8 +7,6 @@
 #include "miniframe-inline-model.c"
 #endif
 
-#define rnd() (double)(rand())/(float)(RAND_MAX)
-
 // ================ Functions implementation ====================
 
 // Copy the properties of the MFModelStatus 'that' into the 
@@ -34,8 +32,17 @@ void MFModelStatusCopy(const MFModelStatus* const that,
 // Free memory used by the properties of the MFModelStatus 'that'
 // The memory used by the MFModelStatus itself is managed by MiniFrame
 void MFModelStatusFreeStatic(MFModelStatus* that) {
-  (void)that;
-  
+#if BUILDMODE == 0
+  if (that == NULL) {
+    MiniFrameErr->_type = PBErrTypeNullPointer;
+    sprintf(MiniFrameErr->_msg, "'that' is null");
+    PBErrCatch(MiniFrameErr);
+  }
+#endif
+  for (int iPlayer = NBPLAYER; iPlayer--;) {
+    if (that->_nn[iPlayer] != NULL)
+      NeuraNetFree(that->_nn + iPlayer);
+  }
 }
 
 // Free memory used by the properties of the MFModelTransition 'that'
@@ -165,10 +172,24 @@ void MFModelStatusGetValues(const MFModelStatus* const that,
     PBErrCatch(MiniFrameErr);
   }
 #endif
+  VecFloat* input = VecFloatCreate(NBHOLE);
+  VecFloat* output = VecFloatCreate(1);
   for (int iPlayer = NBPLAYER; iPlayer--;) {
-    values[iPlayer] = that->_score[iPlayer];
-    values[iPlayer] += rnd() * 0.001;
+    if (that->_nn[iPlayer] == NULL) {
+      values[iPlayer] = that->_score[iPlayer];
+    } else {
+      for (int iHole = NBHOLE; iHole--;) {
+        int jHole = iHole + iPlayer * NBHOLEPLAYER;
+        if (jHole >= NBHOLE)
+          jHole -= NBHOLE;
+        VecSet(input, iHole, that->_nbStone[jHole]);
+      }
+      NNEval(that->_nn[iPlayer], input, output);
+      values[iPlayer] = VecGet(output, 0);
+    }
   }
+  VecFree(&input);
+  VecFree(&output);
   if (MFModelStatusIsEnd(that)) {
     int iWinner = -1;
     for (int iPlayer = NBPLAYER; iPlayer--;) {
@@ -176,7 +197,12 @@ void MFModelStatusGetValues(const MFModelStatus* const that,
         iWinner = iPlayer;
       }
     }
-    values[iWinner] = 100.0;
+    for (int iPlayer = NBPLAYER; iPlayer--;) {
+      if (iPlayer == iWinner)
+        values[iPlayer] = fabs(values[iPlayer]) * 100.0;
+      else
+        values[iPlayer] = fabs(values[iPlayer]) * -100.0;
+    }
   }
 }
 
@@ -381,8 +407,10 @@ void MFModelStatusInit(MFModelStatus* const that) {
   }
 #endif
   that->_end = 0;
-  for (int iPlayer = NBPLAYER; iPlayer--;)
+  for (int iPlayer = NBPLAYER; iPlayer--;) {
     that->_score[iPlayer] = 0;
+    that->_nn[iPlayer] = NULL;
+  }
   for (int iHole = NBHOLE; iHole--;)
     that->_nbStone[iHole] = NBINITSTONEPERHOLE;
   that->_curPlayer = 0;

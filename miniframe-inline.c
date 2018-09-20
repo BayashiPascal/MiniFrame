@@ -64,6 +64,22 @@ int MFGetNbWorldExpanded(const MiniFrame* const that) {
   return that->_nbWorldExpanded;
 }
 
+// Get the nb of world unexpanded during the last expansion 
+// of the MiniFrame 'that'
+#if BUILDMODE != 0
+inline
+#endif
+int MFGetNbWorldUnexpanded(const MiniFrame* const that) {
+#if BUILDMODE == 0
+  if (that == NULL) {
+    MiniFrameErr->_type = PBErrTypeNullPointer;
+    sprintf(MiniFrameErr->_msg, "'that' is null");
+    PBErrCatch(MiniFrameErr);
+  }
+#endif
+  return that->_nbWorldUnexpanded;
+}
+
 // Get the time used at end of expansion of the MiniFrame 'that'
 #if BUILDMODE != 0
 inline
@@ -412,6 +428,23 @@ int MFGetNbComputedWorld(const MiniFrame* const that) {
 #endif
   return GSetNbElem(&(that->_worlds));
 }
+
+// Get the nb of removed world during the last call to SetCurWorld 
+// of the MiniFrame 'that'
+#if BUILDMODE != 0
+inline
+#endif
+int MFGetNbWorldRemoved(const MiniFrame* const that) {
+#if BUILDMODE == 0
+  if (that == NULL) {
+    MiniFrameErr->_type = PBErrTypeNullPointer;
+    sprintf(MiniFrameErr->_msg, "'that' is null");
+    PBErrCatch(MiniFrameErr);
+  }
+#endif
+  return that->_nbRemovedWorld;
+}
+
 
 // Return the egocentric value of the MFTransition 'that' for the 
 // actor 'iActor'.

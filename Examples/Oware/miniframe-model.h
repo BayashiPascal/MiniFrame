@@ -9,6 +9,7 @@
 #include <stdbool.h>
 #include <time.h>
 #include "/home/bayashi/GitHub/PBErr/pberr.h"
+#include "/home/bayashi/GitHub/NeuraNet/neuranet.h"
 
 // ================= Define ==================
 
@@ -46,6 +47,8 @@ typedef struct MFModelStatus {
   char _end;
   // Index of the player who has the sente
   int _curPlayer;
+  // NeuraNet for each player
+  NeuraNet* _nn[NBPLAYER];
 } MFModelStatus;
 
 // ================ Functions declaration ====================

@@ -224,6 +224,8 @@ void UnitTestMiniFrameCreateFree() {
     ISEQUALF(mf->_timeUnusedExpansion, 0.0) == false ||
     ISEQUALF(mf->_percWorldReused, 0.0) == false ||
     mf->_nbWorldExpanded != 0 ||
+    mf->_nbWorldUnexpanded != 0 ||
+    mf->_nbRemovedWorld != 0 ||
     mf->_timeEndExpansion <= 0.0 ||
     mf->_reuseWorld != false) {
     MiniFrameErr->_type = PBErrTypeUnitTestFailed;
@@ -311,6 +313,12 @@ void UnitTestMiniFrameGetSet() {
     sprintf(MiniFrameErr->_msg, "MFGetNbWorldExpanded failed");
     PBErrCatch(MiniFrameErr);
   }
+  mf->_nbWorldUnexpanded = 1;
+  if (MFGetNbWorldUnexpanded(mf) != mf->_nbWorldUnexpanded) {
+    MiniFrameErr->_type = PBErrTypeUnitTestFailed;
+    sprintf(MiniFrameErr->_msg, "MFGetNbWorldUnexpanded failed");
+    PBErrCatch(MiniFrameErr);
+  }
   mf->_timeSearchWorld = 2.0;
   if (ISEQUALF(MFGetTimeSearchWorld(mf), 
     mf->_timeSearchWorld) == false) {
@@ -357,6 +365,8 @@ void UnitTestMiniFrameExpandSetCurWorld() {
   printf("Time unused by MFExpand: %f\n", MFGetTimeUnusedExpansion(mf));
   printf("Time search world to expand: %f\n", MFGetTimeSearchWorld(mf));
   printf("Nb world expanded: %d\n", MFGetNbWorldExpanded(mf));
+  printf("Nb world unexpanded: %d\n", MFGetNbWorldUnexpanded(mf));
+  printf("Nb world removed: %d\n", MFGetNbWorldRemoved(mf));
   printf("Perc world reused: %f\n", MFGetPercWordReused(mf));
   printf("Computed worlds:\n");
   GSetIterForward iter = GSetIterForwardCreateStatic(MFWorlds(mf));
@@ -366,6 +376,8 @@ void UnitTestMiniFrameExpandSetCurWorld() {
   } while (GSetIterStep(&iter));
   if (mf->_timeUnusedExpansion < 0.0 ||
     MFGetNbWorldExpanded(mf) != 16 ||
+    MFGetNbWorldUnexpanded(mf) != 0 ||
+    MFGetNbWorldRemoved(mf) != 0 ||
     ISEQUALF(MFGetPercWordReused(mf), 0.625) == false ||
     ISEQUALF(MFGetTimeSearchWorld(mf), 100.0) == false) {
     MiniFrameErr->_type = PBErrTypeUnitTestFailed;

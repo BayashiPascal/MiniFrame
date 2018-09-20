@@ -70,6 +70,10 @@ typedef struct MiniFrame {
   float _timeSearchWorld;
   // Nb of worlds expanded during last call to MFExpand
   int _nbWorldExpanded;
+  // Nb of worlds unexpanded during last call to MFExpand
+  int _nbWorldUnexpanded;
+  // Nb of removed world;
+  int _nbRemovedWorld;
   // Flag to activate the reuse of previously computed same world
   bool _reuseWorld;
   // Percentage (in [0.0, 1.0]) of world reused during the last 
@@ -174,6 +178,20 @@ float MFGetTimeSearchWorld(const MiniFrame* const that);
 inline
 #endif
 int MFGetNbWorldExpanded(const MiniFrame* const that);
+
+// Get the nb of world unexpanded during the last expansion 
+// of the MiniFrame 'that'
+#if BUILDMODE != 0
+inline
+#endif
+int MFGetNbWorldUnexpanded(const MiniFrame* const that);
+
+// Get the nb of removed world during the last call to SetCurWorld 
+// of the MiniFrame 'that'
+#if BUILDMODE != 0
+inline
+#endif
+int MFGetNbWorldRemoved(const MiniFrame* const that);
 
 // Get the time used at end of expansion of the MiniFrame 'that'
 #if BUILDMODE != 0
