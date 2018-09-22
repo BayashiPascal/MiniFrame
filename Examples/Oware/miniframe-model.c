@@ -177,6 +177,7 @@ void MFModelStatusGetValues(const MFModelStatus* const that,
   for (int iPlayer = NBPLAYER; iPlayer--;) {
     if (that->_nn[iPlayer] == NULL) {
       values[iPlayer] = that->_score[iPlayer];
+      values[iPlayer] += rnd() * 0.001;
     } else {
       for (int iHole = NBHOLE; iHole--;) {
         int jHole = iHole + iPlayer * NBHOLEPLAYER;
@@ -190,7 +191,7 @@ void MFModelStatusGetValues(const MFModelStatus* const that,
   }
   VecFree(&input);
   VecFree(&output);
-  if (MFModelStatusIsEnd(that)) {
+  /*if (MFModelStatusIsEnd(that)) {
     int iWinner = -1;
     for (int iPlayer = NBPLAYER; iPlayer--;) {
       if (iWinner == -1 || values[iWinner] < values[iPlayer]) {
@@ -203,7 +204,7 @@ void MFModelStatusGetValues(const MFModelStatus* const that,
       else
         values[iPlayer] = fabs(values[iPlayer]) * -100.0;
     }
-  }
+  }*/
 }
 
 // Return the MFModelStatus resulting from applying the 
@@ -266,7 +267,7 @@ MFModelStatus MFModelStatusStep(const MFModelStatus* const that,
       // If there has been captured stones, it means the current
       // player has starved the opponent. The current player looses.
       status._end = 1;
-      status._score[status._curPlayer] = -100.0;
+      //status._score[status._curPlayer] = 0.0;
     } else {
       // If there was no captured stones, it means the opponent
       // starved itself. The current player catches all his own stones.
@@ -309,7 +310,7 @@ void MFModelStatusPrint(const MFModelStatus* const that,
   fprintf(stream, "#%d: ", that->_nbTurn);
   for (int iHole = 0; iHole < NBHOLE; ++iHole)
     fprintf(stream, "%d ", that->_nbStone[iHole]);
-  fprintf(stream, "\nscore: ");
+  fprintf(stream, " score: ");
   for (int iPlayer = 0; iPlayer < NBPLAYER; ++iPlayer)
     fprintf(stream, "%d:%d ", iPlayer, that->_score[iPlayer]);
 }

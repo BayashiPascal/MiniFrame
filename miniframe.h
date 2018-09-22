@@ -36,7 +36,7 @@ typedef struct MFTransition {
   // Reference to the reached world through this action
   // if null it means this action has not been computed
   MFWorld* _toWorld;
-  // Array of forecasted value of this action from the pov of each actor
+  // Array of forecasted POV value of this transition for each actor
   float _values[MF_NBMAXACTOR];
 } MFTransition;
 
@@ -239,21 +239,8 @@ const MFModelStatus* MFWorldStatus(const MFWorld* const that);
 void MFExpand(MiniFrame* that);
 
 // Return the value of the MFWorld 'that' from the point of view of the 
-// actor 'hero'.
-// If 'hero' equals -1 it mens we are getting the value of a world
-// during expansion and there is no preempting actor (everyone acting
-// at the same time). Then we give priority during expansion to 
-// worlds maximising simultaneously individual values.
-float MFWorldGetPOVValue(const MFWorld* const that, const int hero);
-
-// Return the value of the MFTransition 'that' from the point of view 
-// of the actor 'hero'.
-// If 'hero' equals -1 it means we are getting the value of a world
-// during expansion and there is no preempting actor (everyone acting
-// at the same time). Then we give priority during expansion to 
-// worlds maximising simultaneously individual values.
-float MFTransitionGetPOVValue(const MFTransition* const that, 
-  const int hero);
+// actor 'iActor'.
+float MFWorldGetPOVValue(const MFWorld* const that, const int iActor);
 
 // Get the number of transition for the MFWorld 'that'
 #if BUILDMODE != 0
@@ -316,8 +303,6 @@ MFModelStatus MFWorldComputeTransition(const MFWorld* const that,
   const int iTrans);
 
 // Get the forecast value of the MFWorld 'that' for the actor 'iActor'
-// It's the value of the MFWorldif it has no transitions, or the
-// highest value of its transitions
 float MFWorldGetForecastValue(const MFWorld* const that, int iActor);
 
 // Set the value of the MFTransition 'that' for the actor 'iActor' to 
@@ -328,7 +313,7 @@ inline
 void MFTransitionSetValue(MFTransition* const that, const int iActor,
   const float val);
 
-// Return the egocentric value of the MFTransition 'that' for the 
+// Return the forecasted POV value of the MFTransition 'that' for the 
 // actor 'iActor'.
 #if BUILDMODE != 0
 inline

@@ -83,11 +83,6 @@ void UnitTestMFTransitionGetSet() {
     sprintf(MiniFrameErr->_msg, "MFTransitionGetValue failed");
     PBErrCatch(MiniFrameErr);
   }
-  if (ISEQUALF(MFTransitionGetPOVValue(&act, 0), 1.0) == false) {
-    MiniFrameErr->_type = PBErrTypeUnitTestFailed;
-    sprintf(MiniFrameErr->_msg, "MFTransitionGetPOVValue failed");
-    PBErrCatch(MiniFrameErr);
-  }
   MFWorld worldB;
   MFTransitionSetToWorld(&act, &worldB);
   if (MFTransitionToWorld(&act) != &worldB) {
@@ -299,7 +294,7 @@ void UnitTestMiniFrameGetSet() {
   }
   MFModelStatus modelWorld = {._step = 0, ._pos = 0, ._tgt = 1};
   MFWorld* world = MFWorldCreate(&modelWorld);
-  MFAddWorld(mf, world, -1);
+  MFAddWorld(mf, world, 0);
   if (GSetNbElem(MFWorlds(mf)) != 2 ||
     MFModelStatusIsSame(MFWorldStatus(world),
       (MFModelStatus*)GSetGet(MFWorlds(mf), 1)) == false) {
@@ -444,6 +439,7 @@ void UnitTestMiniFrameFullExample() {
     printf(") real(");
     MFModelStatusPrint(&curWorld, stdout);
     printf(")\n");
+    MFWorldTransPrintln(MFCurWorld(mf), stdout);  
   }
   MiniFrameFree(&mf);
   printf("UnitTestMiniFrameFullExample OK\n");

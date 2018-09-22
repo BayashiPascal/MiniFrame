@@ -38,7 +38,7 @@ void RunDemo(float expansionTime, bool useNN) {
   // Set the expansion time
   MFSetMaxTimeExpansion(mf, expansionTime);
   // Set reusable worlds
-  //MFSetWorldReusable(mf, true);
+  MFSetWorldReusable(mf, true);
   // Flag to end the game
   bool flagEnd = false;
   // Loop until end of game
@@ -49,6 +49,7 @@ void RunDemo(float expansionTime, bool useNN) {
     // Correct the current world in the MiniFrame
     MFSetCurWorld(mf, &curWorld);
     // Expand
+    //MFWorldTransPrintln(MFCurWorld(mf), stdout);
     MFExpand(mf);
     // Display info about exansion
     printf("exp: %d ", MFGetNbWorldExpanded(mf));
@@ -69,7 +70,7 @@ void RunDemo(float expansionTime, bool useNN) {
         printf("sente: %d ", curWorld._curPlayer);
         MFModelTransitionPrint(bestTrans, stdout);
         printf(" forecast: %f", 
-          MFTransitionGetPOVValue((MFTransition*)bestTrans, 
+          MFTransitionGetValue((MFTransition*)bestTrans, 
           curWorld._curPlayer));
         printf("\n");
         // Step with best transition

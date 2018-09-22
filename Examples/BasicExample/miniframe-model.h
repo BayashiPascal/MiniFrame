@@ -22,6 +22,9 @@
 
 // ================= Define ==================
 
+// True if all actors act simultaneously, else false. As no effect if 
+// MF_NBMAXACTOR equals 1
+#define MF_SIMULTANEOUS_PLAY false
 // Max number of actors in the world
 // must be at least one
 #define MF_NBMAXACTOR 1

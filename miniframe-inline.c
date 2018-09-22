@@ -446,7 +446,7 @@ int MFGetNbWorldRemoved(const MiniFrame* const that) {
 }
 
 
-// Return the egocentric value of the MFTransition 'that' for the 
+// Return the forecasted POV value of the MFTransition 'that' for the 
 // actor 'iActor'.
 #if BUILDMODE != 0
 inline

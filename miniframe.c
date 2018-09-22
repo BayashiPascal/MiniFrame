@@ -39,10 +39,10 @@ void MFWorldSetTransitionToWorld(
 // Update backward the forecast values for each transitions 
 // leading to the MFWorld 'world' in the MiniFrame 'that'
 void MFUpdateForecastValues(MiniFrame* const that, 
-  const MFWorld* const world, float delayPenalty);
+  const MFWorld* const world, float delayPenalty, GSet* const setWorld);
 
 // Update the values of the MFTransition 'that' for each actor with 
-// the values 'values'
+// the forecasted values 'values' of the ToWorld for each actor
 // Update only if the new value is higher than the current one
 // Return true if at least one value has been updated, else false
 bool MFTransitionUpdateValues(MFTransition* const that, 
@@ -79,7 +79,7 @@ MiniFrame* MiniFrameCreate(const MFModelStatus* const initStatus) {
   MFSetMaxTimeExpansion(that, MF_DEFAULTTIMEEXPANSION);
   that->_curWorld = MFWorldCreate(initStatus);
   that->_worlds = GSetCreateStatic();
-  MFAddWorld(that, MFCurWorld(that), -1);
+  MFAddWorld(that, MFCurWorld(that), MFModelStatusGetSente(initStatus));
   that->_timeSearchWorld = MF_DEFAULTTIMEEXPANSION;
   that->_nbWorldExpanded = 0;
   that->_nbWorldUnexpanded = 0;
@@ -293,7 +293,9 @@ void MFExpand(MiniFrame* that) {
     }
     // Update backward the forecast values for each transitions 
     // leading to the expanded world according to its new transitions
-    MFUpdateForecastValues(that, worldToExpand, 0.0);
+    GSet setWorld = GSetCreateStatic();
+    MFUpdateForecastValues(that, worldToExpand, 0.0, &setWorld);
+    GSetFlush(&setWorld);
     // Declare a variable to memorize the time at the end of one
     // step of expansion
     clock_t clockEndLoop = clock();
@@ -351,77 +353,58 @@ void MFExpand(MiniFrame* that) {
 }
 
 // Return the value of the MFWorld 'that' from the point of view of the 
-// actor 'hero'.
-// If 'hero' equals -1 it mens we are getting the value of a world
-// during expansion and there is no preempting actor (everyone acting
-// at the same time). Then we give priority during expansion to 
-// worlds maximising simultaneously individual values.
-float MFWorldGetPOVValue(const MFWorld* const that, const int hero) {
+// actor 'iActor'.
+float MFWorldGetPOVValue(const MFWorld* const that, const int iActor) {
 #if BUILDMODE == 0
   if (that == NULL) {
     MiniFrameErr->_type = PBErrTypeNullPointer;
     sprintf(MiniFrameErr->_msg, "'that' is null");
     PBErrCatch(MiniFrameErr);
   }
-  if (hero < -1 || hero >= MF_NBMAXACTOR) {
-    MiniFrameErr->_type = PBErrTypeInvalidArg;
-    sprintf(MiniFrameErr->_msg, "'hero' is invalid (-1<=%d<%d)", \
-      hero, MF_NBMAXACTOR);
-    PBErrCatch(MiniFrameErr);
-  }
+  #if MF_NBMAXACTOR == 1
+    if (iActor != 0) {
+      MiniFrameErr->_type = PBErrTypeInvalidArg;
+      sprintf(MiniFrameErr->_msg, "'iActor' is invalid (%d==0)", \
+        iActor);
+      PBErrCatch(MiniFrameErr);
+    }
+  #else
+    if (iActor < -1 || iActor >= MF_NBMAXACTOR) {
+      MiniFrameErr->_type = PBErrTypeInvalidArg;
+      sprintf(MiniFrameErr->_msg, "'iActor' is invalid (-1<=%d<%d)", \
+        iActor, MF_NBMAXACTOR);
+      PBErrCatch(MiniFrameErr);
+    }
+  #endif
 #endif
   // Declare a variable to memorize the returned value
   float value = 0.0;
-  // Loop on actors
-  for (int iActor = MF_NBMAXACTOR; iActor--;) {
-    // If this actor is active
-    if (MFModelStatusIsActorActive(MFWorldStatus(that), iActor)) {
-      // Update the value
-      if (iActor == hero || hero == -1)
-        value += MFWorldGetValue(that, iActor);
-      else
-        value -= MFWorldGetValue(that, iActor);
+#if MF_NBMAXACTOR == 1
+  value = MFWorldGetValue(that, iActor);
+#else
+  #if MF_SIMULTANEOUS_PLAY
+    // Loop on actors
+    for (int jActor = MF_NBMAXACTOR; jActor--;) {
+      // If this actor is active
+      if (MFModelStatusIsActorActive(MFWorldStatus(that), jActor)) {
+        // Update the value
+        value += MFWorldGetValue(that, jActor);
+      }
     }
-  }
-  // Return the value
-  return value;
-}
-
-// Return the value of the MFTransition 'that' from the point of view 
-// of the actor 'hero'.
-// If 'hero' equals -1 it mens we are getting the value of a world
-// during expansion and there is no preempting actor (everyone acting
-// at the same time). Then we give priority during expansion to 
-// worlds maximising simultaneously individual values.
-float MFTransitionGetPOVValue(const MFTransition* const that, 
-  const int hero) {
-#if BUILDMODE == 0
-  if (that == NULL) {
-    MiniFrameErr->_type = PBErrTypeNullPointer;
-    sprintf(MiniFrameErr->_msg, "'that' is null");
-    PBErrCatch(MiniFrameErr);
-  }
-  if (hero < -1 || hero >= MF_NBMAXACTOR) {
-    MiniFrameErr->_type = PBErrTypeInvalidArg;
-    sprintf(MiniFrameErr->_msg, "'hero' is invalid (-1<=%d<%d)", \
-      hero, MF_NBMAXACTOR);
-    PBErrCatch(MiniFrameErr);
-  }
+  #else
+    // Loop on actors
+    for (int jActor = MF_NBMAXACTOR; jActor--;) {
+      // If this actor is active
+      if (MFModelStatusIsActorActive(MFWorldStatus(that), jActor)) {
+        // Update the value
+        if (jActor == iActor)
+          value += MFWorldGetValue(that, jActor);
+        else
+          value -= MFWorldGetValue(that, jActor);
+      }
+    }
+  #endif
 #endif
-  // Declare a variable to memorize the returned value
-  float value = 0.0;
-  // Loop on actors
-  for (int iActor = MF_NBMAXACTOR; iActor--;) {
-    // If this actor is active
-    if (MFModelStatusIsActorActive(
-      MFWorldStatus(MFTransitionToWorld(that)), iActor)) {
-      // Update the value
-      if (iActor == hero || hero == -1)
-        value += MFTransitionGetValue(that, iActor);
-      else
-        value -= MFTransitionGetValue(that, iActor);
-    }
-  }
   // Return the value
   return value;
 }
@@ -567,8 +550,6 @@ void MFWorldSetTransitionToWorld(
 }
 
 // Get the forecast value of the MFWorld 'that' for the actor 'iActor'
-// It's the value of the MFWorldif it has no transitions, or the
-// highest value of its transitions
 float MFWorldGetForecastValue(const MFWorld* const that, int iActor) {
 #if BUILDMODE == 0
   if (that == NULL) {
@@ -583,10 +564,16 @@ float MFWorldGetForecastValue(const MFWorld* const that, int iActor) {
     PBErrCatch(MiniFrameErr);
   }
 #endif
-  // Declare a variable to memorize if there are transitions
+  // Declare a variable to memorize if there are expanded transitions
   bool flagTransition = false;
   // Declare a variable to memorize the highest value among transitions
   float valBestTrans = 0.0;
+#if MF_NBMAXACTOR != 1
+  #if MF_SIMULTANEOUS_PLAY == false
+    // Get the sente
+    int sente = MFModelStatusGetSente(MFWorldStatus(that));
+  #endif
+#endif
   // Loop on transitions
   for (int iTrans = MFWorldGetNbTrans(that); iTrans--;) {
     // Declare a variable to memorize the transition
@@ -594,27 +581,47 @@ float MFWorldGetForecastValue(const MFWorld* const that, int iActor) {
       MFWorldTransition(that, iTrans);
     // If this transitions has been expanded
     if (!MFTransitionIsExpandable(trans)) {
+      // Get the value of the transition from the point of view of 
+      // the requested actor
+      float val = 
+        MFTransitionGetValue(trans, iActor);
       // If it's not the first considered transition
       if (flagTransition) {
-        // Get the value of the transition from the point of view of 
-        // the requested actor
-        float val = 
-          MFTransitionGetPOVValue(trans, iActor);
+#if MF_NBMAXACTOR == 1
         // If the value is better
         if (valBestTrans < val)
           valBestTrans = val;
+#else
+  #if MF_SIMULTANEOUS_PLAY
+        // If the value is better
+        if (valBestTrans < val)
+          valBestTrans = val;
+  #else
+        // If the requested actor has sente
+        if (iActor == sente) {
+          // If the value is better
+          if (valBestTrans < val)
+            valBestTrans = val;
+        } else {
+          // If the value is worst
+          if (valBestTrans > val)
+            valBestTrans = val;
+        }
+  #endif
+#endif
+
+
       // Else it's the first considered transition
       } else {
         // Init the best value with the value of this transition
-        valBestTrans = 
-          MFTransitionGetPOVValue(trans, iActor);
+        valBestTrans = val;
         // Set the flag to memorize there are transitions
         flagTransition = true;
       }
     }
   }
   // Return the value for this world
-  // If there are transitions
+  // If there are expanded transitions
   if (flagTransition) {
     // Return the value of the best transition from the point of view 
     // of the requested actor
@@ -629,7 +636,7 @@ float MFWorldGetForecastValue(const MFWorld* const that, int iActor) {
 
 // Get the best MFModelTransition for the 'iActor'-th actor in the 
 // current MFWorld of the MiniFrame 'that'
-// Return an undefined MFTransition if the curernt world has no 
+// Return an undefined MFTransition if the current world has no 
 // transition
 const MFModelTransition* MFGetBestTransition(
   const MiniFrame* const that, const int iActor) {
@@ -663,7 +670,7 @@ const MFModelTransition* MFGetBestTransition(
       if (bestTrans != NULL) {
         // Get the value of the transition from the point of view of 
         // the requested actor
-        float val = MFTransitionGetPOVValue(trans, iActor);
+        float val = MFTransitionGetValue(trans, iActor);
         // If the value is better
         if (valBestTrans < val) {
           // Update the best value and best transition
@@ -673,7 +680,7 @@ const MFModelTransition* MFGetBestTransition(
       // Else it's the first considered transition
       } else {
         // Init the best value with the value of this transition
-        valBestTrans = MFTransitionGetPOVValue(trans, iActor);
+        valBestTrans = MFTransitionGetValue(trans, iActor);
         // Init the best transition
         bestTrans = trans;
       }
@@ -696,7 +703,7 @@ const MFModelTransition* MFGetBestTransition(
 // MFUpdateForecastValues to give priority to fastest convergence to 
 // best solution and avoid infinite loop due to reuse of computed worlds
 void MFUpdateForecastValues(MiniFrame* const that, 
-  const MFWorld* const world, float delayPenalty) {
+  const MFWorld* const world, float delayPenalty, GSet* const setWorld) {
 #if BUILDMODE == 0
   if (that == NULL) {
     MiniFrameErr->_type = PBErrTypeNullPointer;
@@ -709,18 +716,30 @@ void MFUpdateForecastValues(MiniFrame* const that,
     PBErrCatch(MiniFrameErr);
   }
 #endif
-  // Increase the penalty 
+  // Increase the penalty
   delayPenalty += PBMATH_EPSILON;
-  // Safeguard against infinite loop
-  if (delayPenalty > PBMATH_EPSILON * 100.0)
+  // Avoid infinite loop
+  if (GSetFirstElem(setWorld, world) == NULL)
+    GSetAppend(setWorld, world);
+  else
     return;
   // If the world has ancestors
   if (GSetNbElem(MFWorldSources(world)) > 0) {
     // Get the forecast values of the world for each actor
     float values[MF_NBMAXACTOR] = {0.0};
+#if MF_NBMAXACTOR == 1
+    values[0] = MFWorldGetForecastValue(world, 0) - delayPenalty;
+#else
+  #if MF_SIMULTANEOUS_PLAY
     for (int iAct = MF_NBMAXACTOR; iAct--;)
       values[iAct] = 
         MFWorldGetForecastValue(world, iAct) - delayPenalty;
+  #else
+    int sente = MFModelStatusGetSente(MFWorldStatus(world));
+    values[sente] = 
+      MFWorldGetForecastValue(world, sente) - delayPenalty;
+  #endif
+#endif
     // For each source to the world
     GSetIterForward iter = 
       GSetIterForwardCreateStatic(MFWorldSources(world));
@@ -734,14 +753,14 @@ void MFUpdateForecastValues(MiniFrame* const that,
         // Call recursively the MFUpdateForecastValues with the origin
         // of this transition
         MFUpdateForecastValues(that, MFTransitionFromWorld(trans),
-          delayPenalty + PBMATH_EPSILON);
+          delayPenalty, setWorld);
       }
     } while(GSetIterStep(&iter));
   }
 }
 
 // Update the values of the MFTransition 'that' for each actor with 
-// the values 'values'
+// the forecasted values 'values' of the ToWorld for each actor
 // Update only if the new value is higher than the current one
 // Return true if at least one value has been updated, else false
 bool MFTransitionUpdateValues(MFTransition* const that, 
@@ -760,14 +779,30 @@ bool MFTransitionUpdateValues(MFTransition* const that,
 #endif
   // Declare a variable to memorize the returned flag
   bool updated = false;
-  // For each actor
-  for (int iAct = MF_NBMAXACTOR; iAct--;) {
-    if (that->_values[iAct] < values[iAct]) {
-      updated = true;
-      that->_values[iAct] = values[iAct];
-//printf("update ");MFTransitionPrint(that, stdout);printf("\n");
-    }
+#if MF_NBMAXACTOR == 1
+  if (fabs(that->_values[0] - values[0]) > PBMATH_EPSILON) {
+    updated = true;
+    that->_values[0] = values[0];
   }
+#else
+  #if MF_SIMULTANEOUS_PLAY
+    // For each actor
+    for (int iAct = MF_NBMAXACTOR; iAct--;) {
+      if (fabs(that->_values[iAct] - values[iAct]) > PBMATH_EPSILON) {
+        updated = true;
+        that->_values[iAct] = values[iAct];
+      }
+    }
+  #else
+    // Get the sente for the source world of this transition
+    int sente = 
+      MFModelStatusGetSente(MFWorldStatus(MFTransitionFromWorld(that)));
+    if (fabs(that->_values[sente] - values[sente]) > PBMATH_EPSILON) {
+      updated = true;
+      that->_values[sente] = values[sente];
+    }
+  #endif
+#endif
   // Return the flag
   return updated;
 }

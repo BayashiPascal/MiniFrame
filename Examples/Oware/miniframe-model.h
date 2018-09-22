@@ -20,8 +20,11 @@
 #define NBHOLE (NBHOLEPLAYER * NBPLAYER)
 #define NBINITSTONEPERHOLE 4
 #define NBSTONE (NBHOLE * NBINITSTONEPERHOLE)
-#define NBMAXTURN 500
+#define NBMAXTURN 200
 
+// True if all actors act simultaneously, else false. As no effect if 
+// MF_NBMAXACTOR equals 1
+#define MF_SIMULTANEOUS_PLAY false
 // Max number of actors in the world
 // must be at least one
 #define MF_NBMAXACTOR NBPLAYER
