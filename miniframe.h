@@ -240,7 +240,7 @@ void MFExpand(MiniFrame* that);
 
 // Return the value of the MFWorld 'that' from the point of view of the 
 // actor 'iActor'.
-float MFWorldGetPOVValue(const MFWorld* const that, const int iActor);
+float MFWorldGetForecastValue(const MFWorld* const that, const int iActor);
 
 // Get the number of transition for the MFWorld 'that'
 #if BUILDMODE != 0
@@ -318,7 +318,7 @@ void MFTransitionSetValue(MFTransition* const that, const int iActor,
 #if BUILDMODE != 0
 inline
 #endif
-float MFTransitionGetValue(const MFTransition* const that, 
+float MFTransitionGetForecastValue(const MFTransition* const that, 
   const int iActor);
 
 // Return the egocentric value of the MFWorld 'that' for the 
@@ -350,6 +350,14 @@ void MFWorldTransPrintln(const MFWorld* const that,
 // MFModelStatus 'world'
 void MFSetCurWorld(MiniFrame* const that, 
   const MFModelStatus* const world);
+
+// Print the best forecasted story from the MFWorld 'that' for the 
+// actor 'iActor' on the stream 'stream'
+void MFWorldPrintBestStoryln(const MFWorld* const that, const int iActor, 
+  FILE* const stream);
+
+// Set the values of the MFWorld 'that' to 'values'
+void MFWorldSetValues(MFWorld* const that, const float* const values);
 
 // ================ Inliner ====================
 

@@ -145,7 +145,7 @@ void MFModelStatusGetTrans(const MFModelStatus* const that,
 #endif
   *nbTrans = 0;
   for (int iHole = that->_curPlayer * NBHOLEPLAYER; 
-    iHole < (that->_curPlayer + 1) * NBHOLEPLAYER;
+    iHole < (that->_curPlayer + 1) * NBHOLEPLAYER; 
     ++iHole) {
     if (that->_nbStone[iHole] > 0) {
       transitions[*nbTrans]._iHole = iHole;
@@ -177,7 +177,6 @@ void MFModelStatusGetValues(const MFModelStatus* const that,
   for (int iPlayer = NBPLAYER; iPlayer--;) {
     if (that->_nn[iPlayer] == NULL) {
       values[iPlayer] = that->_score[iPlayer];
-      values[iPlayer] += rnd() * 0.001;
     } else {
       for (int iHole = NBHOLE; iHole--;) {
         int jHole = iHole + iPlayer * NBHOLEPLAYER;
@@ -188,6 +187,8 @@ void MFModelStatusGetValues(const MFModelStatus* const that,
       NNEval(that->_nn[iPlayer], input, output);
       values[iPlayer] = VecGet(output, 0);
     }
+    if (values[iPlayer] * 2 > NBSTONE)
+      values[iPlayer] = NBSTONE;
   }
   VecFree(&input);
   VecFree(&output);
@@ -267,7 +268,7 @@ MFModelStatus MFModelStatusStep(const MFModelStatus* const that,
       // If there has been captured stones, it means the current
       // player has starved the opponent. The current player looses.
       status._end = 1;
-      //status._score[status._curPlayer] = 0.0;
+      status._score[status._curPlayer] = 0.0;
     } else {
       // If there was no captured stones, it means the opponent
       // starved itself. The current player catches all his own stones.
@@ -311,8 +312,11 @@ void MFModelStatusPrint(const MFModelStatus* const that,
   for (int iHole = 0; iHole < NBHOLE; ++iHole)
     fprintf(stream, "%d ", that->_nbStone[iHole]);
   fprintf(stream, " score: ");
-  for (int iPlayer = 0; iPlayer < NBPLAYER; ++iPlayer)
-    fprintf(stream, "%d:%d ", iPlayer, that->_score[iPlayer]);
+  for (int iPlayer = 0; iPlayer < NBPLAYER; ++iPlayer) {
+    fprintf(stream, "%d", that->_score[iPlayer]);
+    if (iPlayer < NBPLAYER - 1)
+      fprintf(stream, ":");
+  }
 }
 
 // Print the MFModelTransition 'that' on the stream 'stream' 
@@ -378,6 +382,12 @@ bool MFModelStatusIsEnd(const MFModelStatus* const that) {
     PBErrCatch(MiniFrameErr);
   }
 #endif
+
+  /*if (that->_score[0] > 0 || that->_score[1] > 0)
+    return true;
+  else
+    return false;*/
+
   if (that->_end == 1 ||
     that->_nbTurn == NBMAXTURN)
     return true;

@@ -200,7 +200,7 @@ void MFAddWorld(MiniFrame* const that, \
   }
 #endif
   GSetAddSort(&(that->_worlds), world, 
-    MFWorldGetPOVValue(world, iActor));  
+    MFWorldGetForecastValue(world, iActor));  
 }
 
 // Return the MFModelStatus of the MFWorld 'that'
@@ -451,7 +451,7 @@ int MFGetNbWorldRemoved(const MiniFrame* const that) {
 #if BUILDMODE != 0
 inline
 #endif
-float MFTransitionGetValue(const MFTransition* const that, 
+float MFTransitionGetForecastValue(const MFTransition* const that, 
   const int iActor) {
 #if BUILDMODE == 0
   if (that == NULL) {

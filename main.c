@@ -78,7 +78,7 @@ void UnitTestMFTransitionGetSet() {
     sprintf(MiniFrameErr->_msg, "MFTransitionSetValue failed");
     PBErrCatch(MiniFrameErr);
   }
-  if (ISEQUALF(MFTransitionGetValue(&act, 0), 1.0) == false) {
+  if (ISEQUALF(MFTransitionGetForecastValue(&act, 0), 1.0) == false) {
     MiniFrameErr->_type = PBErrTypeUnitTestFailed;
     sprintf(MiniFrameErr->_msg, "MFTransitionGetValue failed");
     PBErrCatch(MiniFrameErr);
@@ -386,7 +386,7 @@ void UnitTestMiniFrameExpandSetCurWorld() {
     sprintf(MiniFrameErr->_msg, "MFGetBestTransition failed");
     PBErrCatch(MiniFrameErr);
   }
-  if (ISEQUALF(MFWorldGetPOVValue(MFCurWorld(mf), 0), -2.0) == false) {
+  if (ISEQUALF(MFWorldGetForecastValue(MFCurWorld(mf), 0), -2.0) == false) {
     MiniFrameErr->_type = PBErrTypeUnitTestFailed;
     sprintf(MiniFrameErr->_msg, "MFWorldGetPOVValue failed");
     PBErrCatch(MiniFrameErr);
@@ -439,7 +439,11 @@ void UnitTestMiniFrameFullExample() {
     printf(") real(");
     MFModelStatusPrint(&curWorld, stdout);
     printf(")\n");
-    MFWorldTransPrintln(MFCurWorld(mf), stdout);  
+    /*MFWorldTransPrintln(MFCurWorld(mf), stdout);  
+    printf("--- start of best story ---\n");
+    MFWorldPrintBestStoryln(MFCurWorld(mf), 0, stdout);
+    printf("--- end of best story ---\n");
+    printf("\n");*/
   }
   MiniFrameFree(&mf);
   printf("UnitTestMiniFrameFullExample OK\n");
@@ -461,7 +465,8 @@ void UnitTestAll() {
 }
 
 int main() {
-  UnitTestAll();
+  //UnitTestAll();
+  UnitTestMiniFrameFullExample();
   // Return success code
   return 0;
 }

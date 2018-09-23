@@ -38,7 +38,7 @@ void RunDemo(float expansionTime, bool useNN) {
   // Set the expansion time
   MFSetMaxTimeExpansion(mf, expansionTime);
   // Set reusable worlds
-  MFSetWorldReusable(mf, true);
+  //MFSetWorldReusable(mf, true);
   // Flag to end the game
   bool flagEnd = false;
   // Loop until end of game
@@ -49,8 +49,12 @@ void RunDemo(float expansionTime, bool useNN) {
     // Correct the current world in the MiniFrame
     MFSetCurWorld(mf, &curWorld);
     // Expand
-    //MFWorldTransPrintln(MFCurWorld(mf), stdout);
     MFExpand(mf);
+    /*MFWorldTransPrintln(MFCurWorld(mf), stdout);
+    printf("--- start of best story ---\n");
+    MFWorldPrintBestStoryln(MFCurWorld(mf), 
+      curWorld._curPlayer, stdout);
+    printf("--- end of best story ---\n");*/
     // Display info about exansion
     printf("exp: %d ", MFGetNbWorldExpanded(mf));
     printf("unexp: %d ", MFGetNbWorldUnexpanded(mf));
@@ -70,7 +74,7 @@ void RunDemo(float expansionTime, bool useNN) {
         printf("sente: %d ", curWorld._curPlayer);
         MFModelTransitionPrint(bestTrans, stdout);
         printf(" forecast: %f", 
-          MFTransitionGetValue((MFTransition*)bestTrans, 
+          MFTransitionGetForecastValue((MFTransition*)bestTrans, 
           curWorld._curPlayer));
         printf("\n");
         // Step with best transition
@@ -83,7 +87,7 @@ void RunDemo(float expansionTime, bool useNN) {
     }
     // Display the current world
     MFModelStatusPrint(&curWorld, stdout);
-    printf("\n");
+    printf("\n\n");
     fflush(stdout);
   }
   MFModelStatusFreeStatic(&curWorld);
@@ -136,6 +140,8 @@ void Train(int nbEpoch, int sizePool, int nbElite, int nbGameEpoch,
 }
 
 int main(int argc, char** argv) {
+  // Init the random generator
+  srandom(time(NULL));
   // Declare a variable to memorize the mode
   // 0: demo (default)
   // 1: train mode
