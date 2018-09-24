@@ -50,11 +50,11 @@ void RunDemo(float expansionTime, bool useNN) {
     MFSetCurWorld(mf, &curWorld);
     // Expand
     MFExpand(mf);
-    /*MFWorldTransPrintln(MFCurWorld(mf), stdout);
+    //MFWorldTransPrintln(MFCurWorld(mf), stdout);
     printf("--- start of best story ---\n");
     MFWorldPrintBestStoryln(MFCurWorld(mf), 
       curWorld._curPlayer, stdout);
-    printf("--- end of best story ---\n");*/
+    printf("--- end of best story ---\n");
     // Display info about exansion
     printf("exp: %d ", MFGetNbWorldExpanded(mf));
     printf("unexp: %d ", MFGetNbWorldUnexpanded(mf));

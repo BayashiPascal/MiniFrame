@@ -313,6 +313,8 @@ void MFModelStatusPrint(const MFModelStatus* const that,
     fprintf(stream, "%d ", that->_nbStone[iHole]);
   fprintf(stream, " score: ");
   for (int iPlayer = 0; iPlayer < NBPLAYER; ++iPlayer) {
+    if (iPlayer == MFModelStatusGetSente(that))
+      fprintf(stream, "^");
     fprintf(stream, "%d", that->_score[iPlayer]);
     if (iPlayer < NBPLAYER - 1)
       fprintf(stream, ":");

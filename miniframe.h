@@ -347,7 +347,8 @@ void MFWorldTransPrintln(const MFWorld* const that,
   FILE* const stream);
 
 // Set the current world of the MiniFrame 'that' to match the 
-// MFModelStatus 'world'
+// MFModelStatus 'status'
+// If the world is in computed worlds reuse it, else create a new one
 void MFSetCurWorld(MiniFrame* const that, 
   const MFModelStatus* const world);
 
