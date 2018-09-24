@@ -370,10 +370,10 @@ void UnitTestMiniFrameExpandSetCurWorld() {
     MFWorldTransPrintln(world, stdout);
   } while (GSetIterStep(&iter));
   if (mf->_timeUnusedExpansion < 0.0 ||
-    MFGetNbWorldExpanded(mf) != 16 ||
+    MFGetNbWorldExpanded(mf) != 15 ||
     MFGetNbWorldUnexpanded(mf) != 0 ||
     MFGetNbWorldRemoved(mf) != 0 ||
-    ISEQUALF(MFGetPercWordReused(mf), 0.625) == false ||
+    ISEQUALF(MFGetPercWordReused(mf), 0.666667) == false ||
     ISEQUALF(MFGetTimeSearchWorld(mf), 100.0) == false) {
     MiniFrameErr->_type = PBErrTypeUnitTestFailed;
     sprintf(MiniFrameErr->_msg, "MFExpand failed");
@@ -386,7 +386,7 @@ void UnitTestMiniFrameExpandSetCurWorld() {
     sprintf(MiniFrameErr->_msg, "MFGetBestTransition failed");
     PBErrCatch(MiniFrameErr);
   }
-  if (ISEQUALF(MFWorldGetForecastValue(MFCurWorld(mf), 0), -2.0) == false) {
+  if (ISEQUALF(MFWorldGetForecastValue(MFCurWorld(mf), 0), 0.0) == false) {
     MiniFrameErr->_type = PBErrTypeUnitTestFailed;
     sprintf(MiniFrameErr->_msg, "MFWorldGetPOVValue failed");
     PBErrCatch(MiniFrameErr);
@@ -399,8 +399,8 @@ void UnitTestMiniFrameExpandSetCurWorld() {
   }
   MFModelStatus nextWorld = {._pos = -1, ._tgt = 2};
   MFSetCurWorld(mf, &nextWorld);
-  if (MFCurWorld(mf) != GSetGet(MFWorlds(mf), 1) ||
-    MFGetNbComputedWorld(mf) != 4) {
+  if (MFCurWorld(mf) != GSetGet(MFWorlds(mf), 2) ||
+    MFGetNbComputedWorld(mf) != 6) {
     MiniFrameErr->_type = PBErrTypeUnitTestFailed;
     sprintf(MiniFrameErr->_msg, "MFSetCurWorld failed");
     PBErrCatch(MiniFrameErr);
@@ -465,8 +465,7 @@ void UnitTestAll() {
 }
 
 int main() {
-  //UnitTestAll();
-  UnitTestMiniFrameFullExample();
+  UnitTestAll();
   // Return success code
   return 0;
 }

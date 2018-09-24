@@ -39,10 +39,7 @@ void MFModelStatusFreeStatic(MFModelStatus* that) {
     PBErrCatch(MiniFrameErr);
   }
 #endif
-  for (int iPlayer = NBPLAYER; iPlayer--;) {
-    if (that->_nn[iPlayer] != NULL)
-      NeuraNetFree(that->_nn + iPlayer);
-  }
+
 }
 
 // Free memory used by the properties of the MFModelTransition 'that'
@@ -172,8 +169,8 @@ void MFModelStatusGetValues(const MFModelStatus* const that,
     PBErrCatch(MiniFrameErr);
   }
 #endif
-  VecFloat* input = VecFloatCreate(NBHOLE);
-  VecFloat* output = VecFloatCreate(1);
+  VecFloat* input = VecFloatCreate(MF_MODEL_NN_NBINPUT);
+  VecFloat* output = VecFloatCreate(MF_MODEL_NN_NBOUTPUT);
   for (int iPlayer = NBPLAYER; iPlayer--;) {
     if (that->_nn[iPlayer] == NULL) {
       values[iPlayer] = that->_score[iPlayer];
@@ -192,20 +189,6 @@ void MFModelStatusGetValues(const MFModelStatus* const that,
   }
   VecFree(&input);
   VecFree(&output);
-  /*if (MFModelStatusIsEnd(that)) {
-    int iWinner = -1;
-    for (int iPlayer = NBPLAYER; iPlayer--;) {
-      if (iWinner == -1 || values[iWinner] < values[iPlayer]) {
-        iWinner = iPlayer;
-      }
-    }
-    for (int iPlayer = NBPLAYER; iPlayer--;) {
-      if (iPlayer == iWinner)
-        values[iPlayer] = fabs(values[iPlayer]) * 100.0;
-      else
-        values[iPlayer] = fabs(values[iPlayer]) * -100.0;
-    }
-  }*/
 }
 
 // Return the MFModelStatus resulting from applying the 

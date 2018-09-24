@@ -14,7 +14,7 @@ include $(MAKEFILE_INC)
 MF_MODEL_PATH=$(ROOT_DIR)/MiniFrame/Examples/Oware
 
 # Include directories
-MODEL_INC_DIR=-I$(ROOT_DIR)/PBErr -I$(ROOT_DIR)/NeuraNet -I$(ROOT_DIR)/PBMath -I$(ROOT_DIR)/PBJson -I$(ROOT_DIR)/GTree  -I$(ROOT_DIR)/GSet
+MODEL_INC_DIR=-I$(ROOT_DIR)/PBErr -I$(ROOT_DIR)/GenAlg -I$(ROOT_DIR)/NeuraNet -I$(ROOT_DIR)/PBMath -I$(ROOT_DIR)/PBJson -I$(ROOT_DIR)/GTree  -I$(ROOT_DIR)/GSet -I$(ROOT_DIR)/ELORank
 
 # Rules to make the executable
 main: \

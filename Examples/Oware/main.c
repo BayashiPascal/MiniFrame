@@ -7,6 +7,9 @@
 #include <sys/time.h>
 #include "pberr.h"
 #include "pbmath.h"
+#include "genalg.h"
+#include "elorank.h"
+#include "neuranet.h"
 #include "miniframe.h"
 
 #define RANDOMSEED 0
@@ -38,7 +41,7 @@ void RunDemo(float expansionTime, bool useNN) {
   // Set the expansion time
   MFSetMaxTimeExpansion(mf, expansionTime);
   // Set reusable worlds
-  //MFSetWorldReusable(mf, true);
+  MFSetWorldReusable(mf, true);
   // Flag to end the game
   bool flagEnd = false;
   // Loop until end of game
@@ -51,10 +54,10 @@ void RunDemo(float expansionTime, bool useNN) {
     // Expand
     MFExpand(mf);
     //MFWorldTransPrintln(MFCurWorld(mf), stdout);
-    printf("--- start of best story ---\n");
+    /*printf("--- start of best story ---\n");
     MFWorldPrintBestStoryln(MFCurWorld(mf), 
       curWorld._curPlayer, stdout);
-    printf("--- end of best story ---\n");
+    printf("--- end of best story ---\n");*/
     // Display info about exansion
     printf("exp: %d ", MFGetNbWorldExpanded(mf));
     printf("unexp: %d ", MFGetNbWorldUnexpanded(mf));
@@ -87,10 +90,70 @@ void RunDemo(float expansionTime, bool useNN) {
     }
     // Display the current world
     MFModelStatusPrint(&curWorld, stdout);
-    printf("\n\n");
+    printf("\n");
     fflush(stdout);
   }
-  MFModelStatusFreeStatic(&curWorld);
+  // Free memory
+  for (int iPlayer = NBPLAYER; iPlayer--;) {
+    if (curWorld._nn[iPlayer] != NULL)
+      NeuraNetFree(curWorld._nn + iPlayer);
+  }
+  MiniFrameFree(&mf);
+}
+
+void TrainOneGame(float expansionTime, GenAlgAdn** adns, GSet* result) {
+  // Initial world
+  MFModelStatus curWorld;
+  MFModelStatusInit(&curWorld);
+  // Create the MiniFrame
+  MiniFrame* mf = MiniFrameCreate(&curWorld);
+  // Set the NeuraNet for each actor
+  for (int iActor = 0; iActor < NBPLAYER; ++iActor) {
+    NeuraNet* neuraNet = NeuraNetCreate(MF_MODEL_NN_NBINPUT,
+      MF_MODEL_NN_NBOUTPUT, MF_MODEL_NN_NBHIDDEN, 
+      MF_MODEL_NN_NBBASES, MF_MODEL_NN_NBLINKS);
+    NNSetBases(neuraNet, GAAdnAdnF(adns[iActor]));
+    NNSetLinks(neuraNet, GAAdnAdnI(adns[iActor]));
+    curWorld._nn[iActor] = neuraNet;
+  }
+  // Set the expansion time
+  MFSetMaxTimeExpansion(mf, expansionTime);
+  // Set reusable worlds
+  MFSetWorldReusable(mf, true);
+  // Flag to end the game
+  bool flagEnd = false;
+  // Loop until end of game
+  while (!MFModelStatusIsEnd(&curWorld) && !flagEnd) {
+    // Set the start clock
+    MFSetStartExpandClock(mf, clock());
+    // Correct the current world in the MiniFrame
+    MFSetCurWorld(mf, &curWorld);
+    // Expand
+    MFExpand(mf);
+    if (MFGetTimeUnusedExpansion(mf) < 0.0) {
+      flagEnd = true;
+      curWorld._score[curWorld._curPlayer] = -1;
+    } else {
+      // Get best transition
+      const MFModelTransition* bestTrans = 
+        MFGetBestTransition(mf, MFModelStatusGetSente(&curWorld));
+      if (bestTrans != NULL) {
+        // Step with best transition
+        curWorld = MFModelStatusStep(&curWorld, bestTrans);
+      } else {
+        flagEnd = true;
+      }
+    }
+  }
+  // Update result
+  GSetFlush(result);
+  for (int iActor = 0; iActor < NBPLAYER; ++iActor)
+    GSetAddSort(result, adns[iActor], curWorld._score[iActor]);
+  // Free memory
+  for (int iPlayer = NBPLAYER; iPlayer--;) {
+    if (curWorld._nn[iPlayer] != NULL)
+      NeuraNetFree(curWorld._nn + iPlayer);
+  }
   MiniFrameFree(&mf);
 }
 
@@ -103,40 +166,75 @@ void Train(int nbEpoch, int sizePool, int nbElite, int nbGameEpoch,
   printf("nbElite: %d\n", nbElite);
   printf("nbGameEpoch: %d\n", nbGameEpoch);
   printf("expansionTime: %fms\n", expansionTime);
-  // Create the NeuraNet
-  
+  // Create a NeuraNet
+  NeuraNet* neuraNet = NeuraNetCreate(MF_MODEL_NN_NBINPUT,
+    MF_MODEL_NN_NBOUTPUT, MF_MODEL_NN_NBHIDDEN, 
+    MF_MODEL_NN_NBBASES, MF_MODEL_NN_NBLINKS);
   // Create the GenAlg
+  GenAlg* genAlg = GenAlgCreate(sizePool, nbElite, 
+    NNGetGAAdnFloatLength(neuraNet), NNGetGAAdnIntLength(neuraNet)); 
+  NNSetGABoundsBases(neuraNet, genAlg);
+  NNSetGABoundsLinks(neuraNet, genAlg);
+  GASetTypeNeuraNet(genAlg, MF_MODEL_NN_NBINPUT, 
+    MF_MODEL_NN_NBHIDDEN, MF_MODEL_NN_NBOUTPUT);
+  GAInit(genAlg);
+  // Reload the GenAlg if possible
   
-  // Reload the NeuraNet if possible
-  
-  // Create the ELORank
-  
+  // Declare a GSet to memorize the result
+  GSet result = GSetCreateStatic();
   // Declare a variable to memorize the current epoch
   int iEpoch = 0;
   // Loop on epochs
   while (iEpoch < nbEpoch) {
+    // Create the ELORank
+    ELORank* eloRank = ELORankCreate();
+    for (int iAdn = 0; iAdn < sizePool; ++iAdn)
+      ELORankAdd(eloRank, GSetGet(GAAdns(genAlg), iAdn));
     // Declare a variable to memorize the current game
     int iGame = 0;
     // Loop on games
     while (iGame < nbGameEpoch) {
-      // Set two randomly selected NeuraNet to players
-      
+      printf("Epoch %03d/%03d Game %03d/%03d   \r", 
+        iEpoch + 1, nbEpoch, iGame + 1, nbGameEpoch);
+      fflush(stdout);
+      // Select randomly two adns
+      GenAlgAdn* adns[NBPLAYER] = {NULL};
+      for (int iActor = 0; iActor < NBPLAYER; ++iActor) {
+        int iAdn = (int)round(rnd() * (float)(sizePool - 1));
+        adns[iActor] = GSetGet(GAAdns(genAlg), iAdn);
+      }
       // Play the game
-      
+      TrainOneGame(expansionTime, adns, &result);
+//printf("%p %f %p %f\n", GSetGet(&result, 0), GSetElemGetSortVal(GSetElement(&result, 0)),GSetGet(&result, 1), GSetElemGetSortVal(GSetElement(&result, 1)));
       // Update the ELORank with the result
-      
+      ELORankUpdate(eloRank, &result);
       // Increment the current game
       ++iGame;
     }
-    // Update the values of each NeuraNet in the GenAlg with their ELORank
-    
+    printf("\n");
+    fflush(stdout);
+    // Update the values of each adn in the GenAlg with their ELORank
+    for (int iAdn = 0; iAdn < sizePool; ++iAdn) {
+      GenAlgAdn* adn = GSetGet(GAAdns(genAlg), iAdn);
+      float elo = ELORankGetELO(eloRank, adn);
+      GASetAdnValue(genAlg, adn, elo);
+printf("%d %f\n", iAdn, elo);
+    }
     // Step the GenAlg
-    
+    GAStep(genAlg);
     // Save the best NeuraNet to ./bestnn.txt
+    
+    // Save the GenAlg to ./bestga.txt
     
     // Increment the current epoch
     ++iEpoch;
+    // Free memory
+    ELORankFree(&eloRank);
   }
+  // Free memory
+  GSetFlush(&result);
+  GenAlgFree(&genAlg);
+  NeuraNetFree(&neuraNet);
 }
 
 int main(int argc, char** argv) {
@@ -148,9 +246,9 @@ int main(int argc, char** argv) {
   // 2: demo with trained NeuraNet as player #0
   int mode = 0;
   // Declare a variable to memorize the expansion time (in millisec)
-  float expansionTime = 100.0;
+  float expansionTime = 1.0; //100.0;
   // Declare a variable to memorize the number of epoch for training
-  int nbEpoch = 10;
+  int nbEpoch = 100;
   // Declare variables to memorize the size of pool, number of elites,
   // number of game per epoch for training
   int nbElite = 5;
@@ -186,7 +284,7 @@ int main(int argc, char** argv) {
       expansionTime = atof(argv[iArg]);
     }
   }
-  
+mode=1;  
   if (mode == 0) {
     RunDemo(expansionTime, false);
   } else if (mode == 1) {
