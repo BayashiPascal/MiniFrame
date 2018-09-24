@@ -109,12 +109,16 @@ void TrainOneGame(float expansionTime, GenAlgAdn** adns, GSet* result) {
   MiniFrame* mf = MiniFrameCreate(&curWorld);
   // Set the NeuraNet for each actor
   for (int iActor = 0; iActor < NBPLAYER; ++iActor) {
-    NeuraNet* neuraNet = NeuraNetCreate(MF_MODEL_NN_NBINPUT,
-      MF_MODEL_NN_NBOUTPUT, MF_MODEL_NN_NBHIDDEN, 
-      MF_MODEL_NN_NBBASES, MF_MODEL_NN_NBLINKS);
-    NNSetBases(neuraNet, GAAdnAdnF(adns[iActor]));
-    NNSetLinks(neuraNet, GAAdnAdnI(adns[iActor]));
-    curWorld._nn[iActor] = neuraNet;
+    if (adns[iActor] != (void*)1) {
+      NeuraNet* neuraNet = NeuraNetCreate(MF_MODEL_NN_NBINPUT,
+        MF_MODEL_NN_NBOUTPUT, MF_MODEL_NN_NBHIDDEN, 
+        MF_MODEL_NN_NBBASES, MF_MODEL_NN_NBLINKS);
+      NNSetBases(neuraNet, GAAdnAdnF(adns[iActor]));
+      NNSetLinks(neuraNet, GAAdnAdnI(adns[iActor]));
+      curWorld._nn[iActor] = neuraNet;
+    } else {
+      curWorld._nn[iActor] = NULL;
+    }
   }
   // Set the expansion time
   MFSetMaxTimeExpansion(mf, expansionTime);
@@ -179,7 +183,20 @@ void Train(int nbEpoch, int sizePool, int nbElite, int nbGameEpoch,
     MF_MODEL_NN_NBHIDDEN, MF_MODEL_NN_NBOUTPUT);
   GAInit(genAlg);
   // Reload the GenAlg if possible
-  
+  FILE* stream = fopen("./bestga.txt", "r");
+  if (stream != NULL) {
+    printf("Reload the previous GenAlg from ./bestga.txt\n");
+    if (GALoad(&genAlg, stream)) {
+      printf("Couldn't reload the GenAlg\n");
+      exit(1);
+    }
+  }
+  // Declare a stream to save results
+  FILE* streamRes = fopen("./res.txt", "w");
+  if (streamRes == NULL) {
+    printf("Couldn't open ./res.txt\n");
+    exit(1);
+  }
   // Declare a GSet to memorize the result
   GSet result = GSetCreateStatic();
   // Declare a variable to memorize the current epoch
@@ -190,48 +207,92 @@ void Train(int nbEpoch, int sizePool, int nbElite, int nbGameEpoch,
     ELORank* eloRank = ELORankCreate();
     for (int iAdn = 0; iAdn < sizePool; ++iAdn)
       ELORankAdd(eloRank, GSetGet(GAAdns(genAlg), iAdn));
+    ELORankAdd(eloRank, (GenAlgAdn*)GABestAdn(genAlg));
+    ELORankAdd(eloRank, (void*)1);
     // Declare a variable to memorize the current game
     int iGame = 0;
     // Loop on games
     while (iGame < nbGameEpoch) {
-      printf("Epoch %03d/%03d Game %03d/%03d   \r", 
+      fprintf(stderr, "Epoch %05d/%05d Game %03d/%03d   \r", 
         iEpoch + 1, nbEpoch, iGame + 1, nbGameEpoch);
-      fflush(stdout);
+      fflush(stderr);
       // Select randomly two adns
       GenAlgAdn* adns[NBPLAYER] = {NULL};
-      for (int iActor = 0; iActor < NBPLAYER; ++iActor) {
-        int iAdn = (int)round(rnd() * (float)(sizePool - 1));
-        adns[iActor] = GSetGet(GAAdns(genAlg), iAdn);
+      int iAdn = (int)round(rnd() * (float)(sizePool) - 1.0);
+      if (rnd() < 0.5) {
+        adns[0] = (void*)1;
+        if (iAdn == -1)
+          adns[1] = (GenAlgAdn*)GABestAdn(genAlg);
+        else 
+          adns[1] = GSetGet(GAAdns(genAlg), iAdn);
+      } else {
+        adns[1] = (void*)1;
+        if (iAdn == -1)
+          adns[0] = (GenAlgAdn*)GABestAdn(genAlg);
+        else 
+          adns[0] = GSetGet(GAAdns(genAlg), iAdn);
       }
       // Play the game
       TrainOneGame(expansionTime, adns, &result);
-//printf("%p %f %p %f\n", GSetGet(&result, 0), GSetElemGetSortVal(GSetElement(&result, 0)),GSetGet(&result, 1), GSetElemGetSortVal(GSetElement(&result, 1)));
       // Update the ELORank with the result
       ELORankUpdate(eloRank, &result);
       // Increment the current game
       ++iGame;
     }
-    printf("\n");
-    fflush(stdout);
+    fprintf(stderr, "\n");
+    fflush(stderr);
     // Update the values of each adn in the GenAlg with their ELORank
     for (int iAdn = 0; iAdn < sizePool; ++iAdn) {
       GenAlgAdn* adn = GSetGet(GAAdns(genAlg), iAdn);
       float elo = ELORankGetELO(eloRank, adn);
       GASetAdnValue(genAlg, adn, elo);
-printf("%d %f\n", iAdn, elo);
     }
+    // Update the value of the best adn too
+    GenAlgAdn* bestAdn = (GenAlgAdn*)GABestAdn(genAlg);
+    bestAdn->_val = ELORankGetELO(eloRank, bestAdn);
     // Step the GenAlg
     GAStep(genAlg);
+    // Display the elo of the best and the reference
+    float eloRef = ELORankGetELO(eloRank, (void*)1);
+    float eloBest = GAAdnGetVal(bestAdn);
+    printf("best: %f(age %ld) ref: %f(rank %d)\n", eloBest, 
+      GAAdnGetAge(bestAdn), eloRef, ELORankGetRank(eloRank, (void*)1));
+    fflush(stdout);
+    // Save the result
+    fprintf(streamRes, "%ld %f %f %d\n", GAGetCurEpoch(genAlg), eloBest,
+      eloRef, ELORankGetRank(eloRank, (void*)1));
+    fflush(streamRes);
     // Save the best NeuraNet to ./bestnn.txt
-    
+    NNSetBases(neuraNet, GAAdnAdnF(bestAdn));
+    NNSetLinks(neuraNet, GAAdnAdnI(bestAdn));
+    stream = fopen("./bestnn.txt", "w");
+    if (stream == NULL) {
+      printf("Couldn't open ./bestnn.txt");
+      exit(1);
+    }
+    if (!NNSave(neuraNet, stream, true)) {
+      printf("Couldn't open ./bestnn.txt");
+      exit(1);
+    }
+    fclose(stream);
     // Save the GenAlg to ./bestga.txt
-    
+    stream = fopen("./bestga.txt", "w");
+    if (stream == NULL) {
+      printf("Couldn't open ./bestga.txt");
+      exit(1);
+    }
+    if (!GASave(genAlg, stream, true)) {
+      printf("Couldn't save ./bestga.txt");
+      exit(1);
+    }
+    fclose(stream);
     // Increment the current epoch
     ++iEpoch;
     // Free memory
     ELORankFree(&eloRank);
   }
   // Free memory
+  fclose(streamRes);
   GSetFlush(&result);
   GenAlgFree(&genAlg);
   NeuraNetFree(&neuraNet);
@@ -246,14 +307,14 @@ int main(int argc, char** argv) {
   // 2: demo with trained NeuraNet as player #0
   int mode = 0;
   // Declare a variable to memorize the expansion time (in millisec)
-  float expansionTime = 1.0; //100.0;
+  float expansionTime = 100.0;
   // Declare a variable to memorize the number of epoch for training
-  int nbEpoch = 100;
+  int nbEpoch = 50;
   // Declare variables to memorize the size of pool, number of elites,
   // number of game per epoch for training
   int nbElite = 5;
   int sizePool = 20;
-  int nbGameEpoch = 100;
+  int nbGameEpoch = 200;
   // Process argument
   for (int iArg = 0; iArg < argc; ++iArg) {
     if (strcmp(argv[iArg], "-help") == 0) {
@@ -284,7 +345,7 @@ int main(int argc, char** argv) {
       expansionTime = atof(argv[iArg]);
     }
   }
-mode=1;  
+
   if (mode == 0) {
     RunDemo(expansionTime, false);
   } else if (mode == 1) {

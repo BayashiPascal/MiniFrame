@@ -23,10 +23,10 @@
 #define NBMAXTURN 200
 
 #define MF_MODEL_NN_NBINPUT NBHOLE
-#define MF_MODEL_NN_NBOUTPUT 1
+#define MF_MODEL_NN_NBOUTPUT 10
 #define MF_MODEL_NN_NBHIDDEN 1
-#define MF_MODEL_NN_NBBASES 200
-#define MF_MODEL_NN_NBLINKS 200
+#define MF_MODEL_NN_NBBASES 100
+#define MF_MODEL_NN_NBLINKS 100
 
 // True if all actors act simultaneously, else false. As no effect if 
 // MF_NBMAXACTOR equals 1

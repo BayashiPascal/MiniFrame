@@ -39,7 +39,7 @@ void MFModelStatusFreeStatic(MFModelStatus* that) {
     PBErrCatch(MiniFrameErr);
   }
 #endif
-
+  (void)that;
 }
 
 // Free memory used by the properties of the MFModelTransition 'that'
@@ -182,7 +182,8 @@ void MFModelStatusGetValues(const MFModelStatus* const that,
         VecSet(input, iHole, that->_nbStone[jHole]);
       }
       NNEval(that->_nn[iPlayer], input, output);
-      values[iPlayer] = VecGet(output, 0);
+      float valMax = VecGetMaxVal(output);
+      values[iPlayer] = MAX(valMax, that->_score[iPlayer]);
     }
     if (values[iPlayer] * 2 > NBSTONE)
       values[iPlayer] = NBSTONE;

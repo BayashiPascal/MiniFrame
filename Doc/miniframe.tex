@@ -10,6 +10,8 @@ The user can choose if MiniFrame should try to reuse previously computed worlds 
 
 A basic example is given to illustrate how to use MiniFrame, as well as the implementation for the game of Oware.\\
 
+The example of the game of Oware also contains an implementation of how to combine MiniFrame with ELORank, GenAlg and NeuraNet to train a NeuraNet later used as the evaluation function of the MiniFrame.\\
+
 It uses the \begin{ttfamily}PBErr\end{ttfamily}, \begin{ttfamily}PBMath\end{ttfamily} and \begin{ttfamily}GSet\end{ttfamily} libraries.\\
 
 \section{Interface}
@@ -136,9 +138,24 @@ It uses the \begin{ttfamily}PBErr\end{ttfamily}, \begin{ttfamily}PBMath\end{ttfa
 
 \subsubsection{Example}
 
+exampleGame.txt:\\
 \begin{scriptsize}
 \begin{ttfamily}
 \verbatiminput{/home/bayashi/GitHub/MiniFrame/Examples/Oware/exampleGame.txt}
 \end{ttfamily}
 \end{scriptsize}
 
+training.txt:\\
+\begin{scriptsize}
+\begin{ttfamily}
+\verbatiminput{/home/bayashi/GitHub/MiniFrame/Examples/Oware/training.txt}
+\end{ttfamily}
+\end{scriptsize}
+
+ELO rank of the best NeuraNet (blue) as evaluation function and ELO rank of the standard (red) evaluation function, and rank of the standard evaluation function against a pool of 21 NeuraNet:\\
+
+\begin{center}
+\begin{figure}[H]
+\centering\includegraphics[width=10cm]{/home/bayashi/GitHub/MiniFrame/Examples/Oware/training.png}\\
+\end{figure}
+\end{center}
