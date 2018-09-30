@@ -845,7 +845,7 @@ void MFWorldTransPrintln(const MFWorld* const that,
   }
 #endif
   MFWorldPrint(that, stream);
-  printf("\n");
+  fprintf(stream, "\n");
   for (int iTrans = 0; iTrans < MFWorldGetNbTrans(that); ++iTrans) {
     fprintf(stream, "  ");
     MFTransitionPrint(MFWorldTransition(that, iTrans), stream);
