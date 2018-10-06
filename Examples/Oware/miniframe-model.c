@@ -9,6 +9,12 @@
 
 // ================ Functions implementation ====================
 
+// Get the number of active actors
+int MFModelStatusGetNbActor(const MFModelStatus* const that) {
+  (void)that;
+  return MF_NBMAXACTOR;
+}
+
 // Copy the properties of the MFModelStatus 'that' into the 
 // MFModelStatus 'tho'
 // Dynamically allocated properties must be cloned

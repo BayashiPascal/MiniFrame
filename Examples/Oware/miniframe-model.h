@@ -62,6 +62,9 @@ typedef struct MFModelStatus {
 
 // ================ Functions declaration ====================
 
+// Get the number of active actors
+int MFModelStatusGetNbActor(const MFModelStatus* const that);
+
 // Copy the properties of the MFModelStatus 'that' into the 
 // MFModelStatus 'tho'
 // Dynamically allocated properties must be cloned

@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.14159265-2.6-1.40.16 (TeX Live 2015/Debian) (preloaded format=pdflatex 2017.8.24)  30 SEP 2018 11:20
+This is pdfTeX, Version 3.14159265-2.6-1.40.16 (TeX Live 2015/Debian) (preloaded format=pdflatex 2017.8.24)  6 OCT 2018 15:26
 entering extended mode
  \write18 enabled.
  %&-line parsing enabled.
@@ -669,10 +669,9 @@ verbatim)
 [44] [45] [46]
 File: /home/bayashi/GitHub/MiniFrame/Examples/BasicExample/miniframe-model.c  (
 verbatim)
- [47] [48] [49] [50]
+ [47] [48] [49] [50] [51]
 File: /home/bayashi/GitHub/MiniFrame/Examples/BasicExample/miniframe-inline-mod
 el.c  (verbatim)
- [51]
 File: /home/bayashi/GitHub/MiniFrame/Examples/Oware/miniframe-model.h  (verbati
 m)
  [52] [53]
@@ -685,14 +684,14 @@ verbatim)
 File: /home/bayashi/GitHub/MiniFrame/Examples/Oware/main.c  (verbatim)
  [61] [62] [63] [64] [65] [66]
 File: /home/bayashi/GitHub/MiniFrame/Examples/Oware/Makefile  (verbatim)
-
+ [67]
 Overfull \hbox (379.26105pt too wide) in paragraph at lines 135--135
 []\OT1/cmtt/m/n/8 MODEL_INC_DIR=-I$(ROOT_DIR)/PBErr -I$(ROOT_DIR)/GenAlg -I$(RO
 OT_DIR)/NeuraNet -I$(ROOT_DIR)/PBMath -I$(ROOT_DIR)/PBJson -I$(ROOT_DIR)/GTree 
  -I$(ROOT_DIR)/GSet -I$(ROOT_DIR)/ELORank[] 
  []
 
-[67]
+
 Overfull \hbox (659.76508pt too wide) in paragraph at lines 135--135
 []\OT1/cmtt/m/n/8 $(COMPILER) `echo "$(miniframe_EXE_DEP) main.o" | tr ' ' '\n'
  | sort -u` miniframe-model.o neuranet.o genalg.o elorank.o $(LINK_ARG) $(minif
@@ -758,7 +757,7 @@ sr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmtt12.pfb></usr/sha
 re/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmtt8.pfb>
 
 pdfTeX warning: pdflatex: no GlyphToUnicode entry has been inserted yet!
-Output written on doc.pdf (73 pages, 225949 bytes).
+Output written on doc.pdf (73 pages, 225933 bytes).
 PDF statistics:
  262 PDF objects out of 1000 (max. 8388607)
  0 named destinations out of 1000 (max. 500000)
