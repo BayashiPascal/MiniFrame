@@ -222,6 +222,7 @@ void UnitTestMiniFrameCreateFree() {
     mf->_nbWorldUnexpanded != 0 ||
     mf->_nbRemovedWorld != 0 ||
     mf->_timeEndExpansion <= 0.0 ||
+    mf->_maxDepthExp != -1 ||
     mf->_reuseWorld != false) {
     MiniFrameErr->_type = PBErrTypeUnitTestFailed;
     sprintf(MiniFrameErr->_msg, "MiniFrameCreate failed");
@@ -345,6 +346,23 @@ void UnitTestMiniFrameGetSet() {
   if (MFGetStartExpandClock(mf) != now) {
     MiniFrameErr->_type = PBErrTypeUnitTestFailed;
     sprintf(MiniFrameErr->_msg, "MFGetStartExpandClock failed");
+    PBErrCatch(MiniFrameErr);
+  }
+  if (MFGetMaxDepthExp(mf) != mf->_maxDepthExp) {
+    MiniFrameErr->_type = PBErrTypeUnitTestFailed;
+    sprintf(MiniFrameErr->_msg, "MFGetMaxDepthExp failed");
+    PBErrCatch(MiniFrameErr);
+  }
+  MFSetMaxDepthExp(mf, 3);
+  if (MFGetMaxDepthExp(mf) != 3) {
+    MiniFrameErr->_type = PBErrTypeUnitTestFailed;
+    sprintf(MiniFrameErr->_msg, "MFSetMaxDepthExp failed");
+    PBErrCatch(MiniFrameErr);
+  }
+  MFSetMaxDepthExp(mf, -2);
+  if (MFGetMaxDepthExp(mf) != -1) {
+    MiniFrameErr->_type = PBErrTypeUnitTestFailed;
+    sprintf(MiniFrameErr->_msg, "MFSetMaxDepthExp failed");
     PBErrCatch(MiniFrameErr);
   }
   MiniFrameFree(&mf);

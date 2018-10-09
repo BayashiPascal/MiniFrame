@@ -51,6 +51,8 @@ typedef struct MFWorld {
   MFTransition _transitions[MF_NBMAXTRANSITION];
   // Number of transitions from this world
   int _nbTransition;
+  // Depth, internal variable used during expansion
+  int _depth;
 } MFWorld;
 
 typedef struct MiniFrame {
@@ -83,6 +85,8 @@ typedef struct MiniFrame {
   float _timeEndExpansion;
   // The clock considered has start during expansion
   clock_t _startExpandClock;
+  // Maximum depth during expansion, if -1 there is no limit
+  int _maxDepthExp;
 } MiniFrame;
 
 
@@ -359,6 +363,19 @@ void MFWorldPrintBestStoryln(const MFWorld* const that, const int iActor,
 
 // Set the values of the MFWorld 'that' to 'values'
 void MFWorldSetValues(MFWorld* const that, const float* const values);
+
+// Return the max depth during expansion for the MiniFrame 'that'
+#if BUILDMODE != 0
+inline
+#endif
+int MFGetMaxDepthExp(const MiniFrame* const that);
+
+// Set the max depth during expansion for the MiniFrame 'that' to 'depth'
+// If depth is less than -1 it is converted to -1
+#if BUILDMODE != 0
+inline
+#endif
+void MFSetMaxDepthExp(MiniFrame* const that, const int depth);
 
 // ================ Inliner ====================
 

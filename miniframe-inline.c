@@ -520,3 +520,35 @@ const float* MFWorldValues(const MFWorld* const that) {
 #endif
   return that->_values;
 }
+
+// Return the max depth during expansion for the MiniFrame 'that'
+#if BUILDMODE != 0
+inline
+#endif
+int MFGetMaxDepthExp(const MiniFrame* const that) {
+#if BUILDMODE == 0
+  if (that == NULL) {
+    MiniFrameErr->_type = PBErrTypeNullPointer;
+    sprintf(MiniFrameErr->_msg, "'that' is null");
+    PBErrCatch(MiniFrameErr);
+  }
+#endif
+  return that->_maxDepthExp;
+}
+
+// Set the max depth during expansion for the MiniFrame 'that' to 'depth'
+// If depth is less than -1 it is converted to -1
+#if BUILDMODE != 0
+inline
+#endif
+void MFSetMaxDepthExp(MiniFrame* const that, const int depth) {
+#if BUILDMODE == 0
+  if (that == NULL) {
+    MiniFrameErr->_type = PBErrTypeNullPointer;
+    sprintf(MiniFrameErr->_msg, "'that' is null");
+    PBErrCatch(MiniFrameErr);
+  }
+#endif
+  that->_maxDepthExp = MAX(-1, depth);
+}
+

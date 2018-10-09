@@ -98,6 +98,7 @@ MiniFrame* MiniFrameCreate(const MFModelStatus* const initStatus) {
   that->_reuseWorld = false;
   that->_percWorldReused = 0.0;
   that->_startExpandClock = 0;
+  that->_maxDepthExp = -1;
   // Estimate the time used at end of expansion which is the time
   // used to flush a gset
   GSet set = GSetCreateStatic();
@@ -282,10 +283,14 @@ void MFExpand(MiniFrame* that) {
           // Set the expanded world as the result of the transition
           MFWorldSetTransitionToWorld(
             worldToExpand, iTrans, expandedWorld);
-          // If it's not an end status world
-          if (!MFModelStatusIsEnd(MFWorldStatus(expandedWorld))) {
+          // If it's not an end status world and we haven't reached
+          // the expansion limit
+          if ((that->_maxDepthExp < 0 || 
+            worldToExpand->_depth < that->_maxDepthExp) &&
+            !MFModelStatusIsEnd(MFWorldStatus(expandedWorld))) {
             // Add the world to the set of worlds to expand
             ++nbWorldToExpand;
+            expandedWorld->_depth = worldToExpand->_depth + 1;
             float value = MFWorldGetValue(expandedWorld, sente);
             GSetAddSort(&worldsToExpand, expandedWorld, value);
             ++nbWorldToExpandPost;
@@ -399,11 +404,13 @@ GSet MFGetWorldsToExpand(MiniFrame* const that,
       // Add this world to the result set ordered by the value
       int sente = MFModelStatusGetSente(MFWorldStatus(world));
       float value = MFWorldGetForecastValue(world, sente);
+      world->_depth = 0;
       GSetAddSort(&set, world, value);
     }
   } while (GSetIterStep(&iter) && clock() < clockLimit);
   // Add the current world
   if (MFWorldIsExpandable(MFCurWorld(that))) {
+    that->_curWorld->_depth = 0;
     GSetAppend(&set, MFCurWorld(that));
   }
   // Return the set of worlds to expand
@@ -427,8 +434,7 @@ bool MFWorldIsExpandable(const MFWorld* const that) {
     // Loop on transitions
     for (int iTrans = that->_nbTransition; iTrans-- && !isExpandable;) {
       // If this transition has not been computed
-      if (MFTransitionIsExpandable(
-        MFWorldTransition(that, iTrans)))
+      if (MFTransitionIsExpandable(MFWorldTransition(that, iTrans)))
         isExpandable = true;
     }
   }
