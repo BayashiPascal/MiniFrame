@@ -326,9 +326,6 @@ void MFTransitionSetValue(MFTransition* const that, const int iActor,
 
 // Return the forecasted POV value of the MFTransition 'that' for the 
 // actor 'iActor'.
-#if BUILDMODE != 0
-inline
-#endif
 float MFTransitionGetForecastValue(const MFTransition* const that, 
   const int iActor);
 

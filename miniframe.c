@@ -634,14 +634,14 @@ const MFModelTransition* MFWorldBestTransition(
     const MFTransition* const trans = MFWorldTransition(that, iTrans);
     // If this transitions has been expanded
     if (!MFTransitionIsExpandable(trans)) {
+      // Get the value of the transition from the point of view of 
+      // the requested actor
+      float val = MFTransitionGetForecastValue(trans, iActor);
+      // Add some random perturbation to avoid always picking
+      // the same transitions between those with equal values
+      val += rnd() * PBMATH_EPSILON;
       // If it's not the first considered transition
       if (bestTrans != NULL) {
-        // Get the value of the transition from the point of view of 
-        // the requested actor
-        float val = MFTransitionGetForecastValue(trans, iActor);
-        // Add some random perturbation to avoid always picking
-        // the same transitions between those with equal values
-        val += rnd() * PBMATH_EPSILON;
         // If the value is better
         if (valBestTrans < val) {
           // Update the best value and best transition
@@ -651,10 +651,7 @@ const MFModelTransition* MFWorldBestTransition(
       // Else it's the first considered transition
       } else {
         // Init the best value with the value of this transition
-        valBestTrans = MFTransitionGetForecastValue(trans, iActor);
-        // Add some random perturbation to avoid always picking
-        // the same transitions between those with equal values
-        valBestTrans += rnd() * PBMATH_EPSILON;
+        valBestTrans = val;
         // Init the best transition
         bestTrans = trans;
       }
@@ -1124,5 +1121,31 @@ void MFWorldSetValues(MFWorld* const that, const float* const values) {
         that->_values[iActor] -= values[jActor];
     }
   }
+}
+
+// Return the forecasted POV value of the MFTransition 'that' for the 
+// actor 'iActor'.
+float MFTransitionGetForecastValue(const MFTransition* const that, 
+  const int iActor) {
+#if BUILDMODE == 0
+  if (that == NULL) {
+    MiniFrameErr->_type = PBErrTypeNullPointer;
+    sprintf(MiniFrameErr->_msg, "'that' is null");
+    PBErrCatch(MiniFrameErr);
+  }
+  if (iActor < 0 || iActor >= MF_NBMAXACTOR) {
+    MiniFrameErr->_type = PBErrTypeInvalidArg;
+    sprintf(MiniFrameErr->_msg, "'iActor' is invalid (0<=%d<%d)", \
+      iActor, MF_NBMAXACTOR);
+    PBErrCatch(MiniFrameErr);
+  }
+#endif
+  float val = 0.0;
+  for (int jActor = MF_NBMAXACTOR; jActor--;)
+    if (iActor == jActor)
+      val += that->_values[jActor];
+    else
+      val -= that->_values[jActor];
+  return val;
 }
 

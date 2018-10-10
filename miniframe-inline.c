@@ -446,29 +446,6 @@ int MFGetNbWorldRemoved(const MiniFrame* const that) {
 }
 
 
-// Return the forecasted POV value of the MFTransition 'that' for the 
-// actor 'iActor'.
-#if BUILDMODE != 0
-inline
-#endif
-float MFTransitionGetForecastValue(const MFTransition* const that, 
-  const int iActor) {
-#if BUILDMODE == 0
-  if (that == NULL) {
-    MiniFrameErr->_type = PBErrTypeNullPointer;
-    sprintf(MiniFrameErr->_msg, "'that' is null");
-    PBErrCatch(MiniFrameErr);
-  }
-  if (iActor < 0 || iActor >= MF_NBMAXACTOR) {
-    MiniFrameErr->_type = PBErrTypeInvalidArg;
-    sprintf(MiniFrameErr->_msg, "'iActor' is invalid (0<=%d<%d)", \
-      iActor, MF_NBMAXACTOR);
-    PBErrCatch(MiniFrameErr);
-  }
-#endif
-  return that->_values[iActor];
-}
-
 // Return the egocentric value of the MFWorld 'that' for the 
 // actor 'iActor'.
 #if BUILDMODE != 0

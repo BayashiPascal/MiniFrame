@@ -290,3 +290,4 @@ bool MFModelStatusIsEnd(const MFModelStatus* const that) {
     return false;
   }
 }
+
