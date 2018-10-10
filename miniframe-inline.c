@@ -552,3 +552,33 @@ void MFSetMaxDepthExp(MiniFrame* const that, const int depth) {
   that->_maxDepthExp = MAX(-1, depth);
 }
 
+// Return the type of expansion for the MiniFrame 'that'
+#if BUILDMODE != 0
+inline
+#endif
+MFExpansionType MFGetExpansionType(const MiniFrame* const that) {
+#if BUILDMODE == 0
+  if (that == NULL) {
+    MiniFrameErr->_type = PBErrTypeNullPointer;
+    sprintf(MiniFrameErr->_msg, "'that' is null");
+    PBErrCatch(MiniFrameErr);
+  }
+#endif
+  return that->_expansionType;
+}
+
+// Set the type expansion for the MiniFrame 'that' to 'type'
+#if BUILDMODE != 0
+inline
+#endif
+void MFSetExpansionType(MiniFrame* const that, const MFExpansionType type) {
+#if BUILDMODE == 0
+  if (that == NULL) {
+    MiniFrameErr->_type = PBErrTypeNullPointer;
+    sprintf(MiniFrameErr->_msg, "'that' is null");
+    PBErrCatch(MiniFrameErr);
+  }
+#endif
+  that->_expansionType = type;
+}
+

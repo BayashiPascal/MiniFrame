@@ -99,6 +99,7 @@ MiniFrame* MiniFrameCreate(const MFModelStatus* const initStatus) {
   that->_percWorldReused = 0.0;
   that->_startExpandClock = 0;
   that->_maxDepthExp = -1;
+  that->_expansionType = MFExpansionTypeValue;
   // Estimate the time used at end of expansion which is the time
   // used to flush a gset
   GSet set = GSetCreateStatic();
@@ -291,8 +292,12 @@ void MFExpand(MiniFrame* that) {
             // Add the world to the set of worlds to expand
             ++nbWorldToExpand;
             expandedWorld->_depth = worldToExpand->_depth + 1;
-            float value = MFWorldGetValue(expandedWorld, sente);
-            GSetAddSort(&worldsToExpand, expandedWorld, value);
+            if (MFGetExpansionType(that) == MFExpansionTypeValue) {
+              float value = MFWorldGetValue(expandedWorld, sente);
+              GSetAddSort(&worldsToExpand, expandedWorld, value);
+            } else if (MFGetExpansionType(that) == MFExpansionTypeWidth) {
+              GSetPush(&worldsToExpand, expandedWorld);
+            }
             ++nbWorldToExpandPost;
           }
         } else {
@@ -402,10 +407,14 @@ GSet MFGetWorldsToExpand(MiniFrame* const that,
     // If this world has transition to expand
     if (world != MFCurWorld(that) && MFWorldIsExpandable(world)) {
       // Add this world to the result set ordered by the value
-      int sente = MFModelStatusGetSente(MFWorldStatus(world));
-      float value = MFWorldGetForecastValue(world, sente);
       world->_depth = 0;
-      GSetAddSort(&set, world, value);
+      if (MFGetExpansionType(that) == MFExpansionTypeValue) {
+        int sente = MFModelStatusGetSente(MFWorldStatus(world));
+        float value = MFWorldGetForecastValue(world, sente);
+        GSetAddSort(&set, world, value);
+      } else if (MFGetExpansionType(that) == MFExpansionTypeWidth) {
+        GSetPush(&set, world);
+      }
     }
   } while (GSetIterStep(&iter) && clock() < clockLimit);
   // Add the current world

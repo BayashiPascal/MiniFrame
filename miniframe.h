@@ -55,6 +55,11 @@ typedef struct MFWorld {
   int _depth;
 } MFWorld;
 
+typedef enum MFExpansionType {
+  MFExpansionTypeValue,
+  MFExpansionTypeWidth
+} MFExpansionType;
+  
 typedef struct MiniFrame {
   // Nb of steps
   unsigned int _nbStep;
@@ -87,6 +92,8 @@ typedef struct MiniFrame {
   clock_t _startExpandClock;
   // Maximum depth during expansion, if -1 there is no limit
   int _maxDepthExp;
+  // Type of expansion, default is MFExpansionTypeValue
+  MFExpansionType _expansionType;
 } MiniFrame;
 
 
@@ -376,6 +383,18 @@ int MFGetMaxDepthExp(const MiniFrame* const that);
 inline
 #endif
 void MFSetMaxDepthExp(MiniFrame* const that, const int depth);
+
+// Return the type of expansion for the MiniFrame 'that'
+#if BUILDMODE != 0
+inline
+#endif
+MFExpansionType MFGetExpansionType(const MiniFrame* const that);
+
+// Set the type expansion for the MiniFrame 'that' to 'type'
+#if BUILDMODE != 0
+inline
+#endif
+void MFSetExpansionType(MiniFrame* const that, const MFExpansionType type);
 
 // ================ Inliner ====================
 

@@ -223,6 +223,7 @@ void UnitTestMiniFrameCreateFree() {
     mf->_nbRemovedWorld != 0 ||
     mf->_timeEndExpansion <= 0.0 ||
     mf->_maxDepthExp != -1 ||
+    mf->_expansionType != MFExpansionTypeValue ||
     mf->_reuseWorld != false) {
     MiniFrameErr->_type = PBErrTypeUnitTestFailed;
     sprintf(MiniFrameErr->_msg, "MiniFrameCreate failed");
@@ -363,6 +364,17 @@ void UnitTestMiniFrameGetSet() {
   if (MFGetMaxDepthExp(mf) != -1) {
     MiniFrameErr->_type = PBErrTypeUnitTestFailed;
     sprintf(MiniFrameErr->_msg, "MFSetMaxDepthExp failed");
+    PBErrCatch(MiniFrameErr);
+  }
+  if (MFGetExpansionType(mf) != mf->_expansionType) {
+    MiniFrameErr->_type = PBErrTypeUnitTestFailed;
+    sprintf(MiniFrameErr->_msg, "MFGetExpansionType failed");
+    PBErrCatch(MiniFrameErr);
+  }
+  MFSetExpansionType(mf, MFExpansionTypeWidth);
+  if (MFGetExpansionType(mf) != MFExpansionTypeWidth) {
+    MiniFrameErr->_type = PBErrTypeUnitTestFailed;
+    sprintf(MiniFrameErr->_msg, "MFSetExpansionType failed");
     PBErrCatch(MiniFrameErr);
   }
   MiniFrameFree(&mf);
