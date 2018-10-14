@@ -859,7 +859,7 @@ void MFWorldTransPrintln(const MFWorld* const that,
   MFWorldPrint(that, stream);
   fprintf(stream, "\n");
   for (int iTrans = 0; iTrans < MFWorldGetNbTrans(that); ++iTrans) {
-    fprintf(stream, "  ");
+    fprintf(stream, "  %d) ", iTrans);
     MFTransitionPrint(MFWorldTransition(that, iTrans), stream);
     fprintf(stream, "\n");
   }
@@ -884,16 +884,10 @@ void MFSetCurWorld(MiniFrame* const that,
 #endif
   // Declare a flag to memorize if we have found the world
   bool flagFound = false;
-  // Declare a flag to manage the deletion of element in the set of
-  // computed worlds
-  bool moved = false;
-  //Declare a variable to memorize the number of removed world
-  int nbRemovedWorld = 0;
   // Loop on computed worlds
   GSetIterForward iter = GSetIterForwardCreateStatic(MFWorlds(that));
   do {
     MFWorld* world = GSetIterGet(&iter);
-    moved = false;
     // If this is the current world
     if (MFModelStatusIsSame(MFWorldStatus(world), status)) {
       // Ensure that the status is exactly the same by copying the 
@@ -904,9 +898,7 @@ void MFSetCurWorld(MiniFrame* const that,
       that->_curWorld = world;
       flagFound = true;
     }
-  } while (moved || GSetIterStep(&iter));
-  // Update the number of removed world
-  that->_nbRemovedWorld = nbRemovedWorld;
+  } while (!flagFound && GSetIterStep(&iter));
   // If we haven't found the searched status
   if (!flagFound) {
     // Create a new MFWorld with the current status

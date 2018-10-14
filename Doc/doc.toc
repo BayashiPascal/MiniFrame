@@ -4,7 +4,7 @@
 \contentsline {subsection}{\numberline {2.1}miniframe.c}{9}
 \contentsline {subsection}{\numberline {2.2}miniframe-inline.c}{28}
 \contentsline {section}{\numberline {3}Makefile}{37}
-\contentsline {section}{\numberline {4}Unit tests}{38}
+\contentsline {section}{\numberline {4}Unit tests}{37}
 \contentsline {section}{\numberline {5}Unit tests output}{46}
 \contentsline {section}{\numberline {6}Examples}{47}
 \contentsline {subsection}{\numberline {6.1}Basic example}{47}
@@ -14,7 +14,7 @@
 \contentsline {subsection}{\numberline {6.2}Oware}{54}
 \contentsline {subsubsection}{\numberline {6.2.1}miniframe-model.h}{54}
 \contentsline {subsubsection}{\numberline {6.2.2}miniframe-model.c}{57}
-\contentsline {subsubsection}{\numberline {6.2.3}miniframe-inline-model.c}{64}
+\contentsline {subsubsection}{\numberline {6.2.3}miniframe-inline-model.c}{63}
 \contentsline {subsubsection}{\numberline {6.2.4}main.c}{64}
 \contentsline {subsubsection}{\numberline {6.2.5}Makefile}{70}
 \contentsline {subsubsection}{\numberline {6.2.6}Example}{70}
