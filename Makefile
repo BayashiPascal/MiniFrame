@@ -21,7 +21,7 @@ $($(repo)_EXENAME): \
 		$($(repo)_EXENAME).o \
 		$($(repo)_EXE_DEP) \
 		$($(repo)_DEP)
-	$(COMPILER) `echo "$($(repo)_EXE_DEP) $($(repo)_EXENAME).o" | tr ' ' '\n' | sort -u` $(MF_MODEL_PATH)/miniframe-model.o $(LINK_ARG) $($(repo)_LINK_ARG) -o $($(repo)_EXENAME) 
+	$(COMPILER) `echo "$($(repo)_EXE_DEP) $($(repo)_EXENAME).o" | tr ' ' '\n' | sort -u` miniframe-model.o $(LINK_ARG) $($(repo)_LINK_ARG) -o $($(repo)_EXENAME) 
 	
 $($(repo)_EXENAME).o: \
 		$(MF_MODEL_PATH)/miniframe-model.h \

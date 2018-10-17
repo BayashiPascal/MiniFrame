@@ -71,13 +71,13 @@ void RunDemo(float expansionTime, bool useNN) {
     } else {
       // Get best transition
       const MFModelTransition* bestTrans = 
-        MFGetBestTransition(mf, MFModelStatusGetSente(&curWorld));
+        MFBestTransition(mf, MFModelStatusGetSente(&curWorld));
       if (bestTrans != NULL) {
         // Display the transition's information 
         printf("sente: %d ", curWorld._curPlayer);
         MFModelTransitionPrint(bestTrans, stdout);
         printf(" forecast: %f", 
-          MFTransitionGetForecastValue((MFTransition*)bestTrans, 
+          MFTransitionGetValue((MFTransition*)bestTrans, 
           curWorld._curPlayer));
         printf("\n");
         // Step with best transition
@@ -140,7 +140,7 @@ void TrainOneGame(float expansionTime, GenAlgAdn** adns, GSet* result) {
     } else {
       // Get best transition
       const MFModelTransition* bestTrans = 
-        MFGetBestTransition(mf, MFModelStatusGetSente(&curWorld));
+        MFBestTransition(mf, MFModelStatusGetSente(&curWorld));
       if (bestTrans != NULL) {
         // Step with best transition
         curWorld = MFModelStatusStep(&curWorld, bestTrans);

@@ -446,7 +446,7 @@ int MFGetNbWorldRemoved(const MiniFrame* const that) {
 }
 
 
-// Return the egocentric value of the MFWorld 'that' for the 
+// Return the value of the MFWorld 'that' for the 
 // actor 'iActor'.
 #if BUILDMODE != 0
 inline
@@ -467,6 +467,31 @@ float MFWorldGetValue(const MFWorld* const that, const int iActor) {
 #endif
   return that->_values[iActor];
 }
+
+// Return the value of the MFTransition 'that' for the 
+// actor 'iActor'.
+#if BUILDMODE != 0
+inline
+#endif
+float MFTransitionGetValue(const MFTransition* const that, 
+  const int iActor) {
+#if BUILDMODE == 0
+  if (that == NULL) {
+    MiniFrameErr->_type = PBErrTypeNullPointer;
+    sprintf(MiniFrameErr->_msg, "'that' is null");
+    PBErrCatch(MiniFrameErr);
+  }
+  if (iActor < 0 || iActor >= MF_NBMAXACTOR) {
+    MiniFrameErr->_type = PBErrTypeInvalidArg;
+    sprintf(MiniFrameErr->_msg, "'iActor' is invalid (0<=%d<%d)", \
+      iActor, MF_NBMAXACTOR);
+    PBErrCatch(MiniFrameErr);
+  }
+#endif
+  return that->_values[iActor];
+}
+
+
 
 // Get the set of MFTransition reaching the MFWorld 'that'
 #if BUILDMODE != 0

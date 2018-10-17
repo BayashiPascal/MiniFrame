@@ -78,7 +78,7 @@ void UnitTestMFTransitionGetSet() {
     sprintf(MiniFrameErr->_msg, "MFTransitionSetValue failed");
     PBErrCatch(MiniFrameErr);
   }
-  if (ISEQUALF(MFTransitionGetForecastValue(&act, 0), 1.0) == false) {
+  if (ISEQUALF(MFTransitionGetValue(&act, 0), 1.0) == false) {
     MiniFrameErr->_type = PBErrTypeUnitTestFailed;
     sprintf(MiniFrameErr->_msg, "MFTransitionGetValue failed");
     PBErrCatch(MiniFrameErr);
@@ -409,7 +409,7 @@ void UnitTestMiniFrameExpandSetCurWorld() {
     sprintf(MiniFrameErr->_msg, "MFExpand failed");
     PBErrCatch(MiniFrameErr);
   }
-  const MFModelTransition* bestTrans = MFGetBestTransition(mf, 0);
+  const MFModelTransition* bestTrans = MFBestTransition(mf, 0);
   printf("Best action: %d\n", bestTrans->_move);
   if (bestTrans->_move != 1) {
     MiniFrameErr->_type = PBErrTypeUnitTestFailed;
@@ -422,7 +422,7 @@ void UnitTestMiniFrameExpandSetCurWorld() {
     PBErrCatch(MiniFrameErr);
   }
   if (ISEQUALF(
-    MFWorldGetForecastValue(MFCurWorld(mf), 0), -0.00001) == false) {
+    MFWorldGetForecastValue(MFCurWorld(mf), 0), 0.0) == false) {
     MiniFrameErr->_type = PBErrTypeUnitTestFailed;
     sprintf(MiniFrameErr->_msg, "MFWorldGetForecastValue failed");
     PBErrCatch(MiniFrameErr);
@@ -456,7 +456,7 @@ void UnitTestMiniFrameFullExample() {
     // Expand
     MFExpand(mf);
     // Get best transition
-    const MFModelTransition* bestTrans = MFGetBestTransition(mf, 0);
+    const MFModelTransition* bestTrans = MFBestTransition(mf, 0);
     if (bestTrans != NULL) {
       // Step with best transition
       curWorld = MFModelStatusStep(&curWorld, bestTrans);

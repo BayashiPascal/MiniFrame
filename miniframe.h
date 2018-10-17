@@ -249,9 +249,12 @@ const MFModelStatus* MFWorldStatus(const MFWorld* const that);
 // expand anymore
 void MFExpand(MiniFrame* that);
 
-// Return the value of the MFWorld 'that' from the point of view of the 
+// Return the forecasted value of the MFWorld 'that' for the 
 // actor 'iActor'.
-float MFWorldGetForecastValue(const MFWorld* const that, const int iActor);
+// This is the best value of the transitions from this world,
+// or the value of this world if it has no transition.
+float MFWorldGetForecastValue(const MFWorld* const that, 
+  const int iActor);
 
 // Get the number of transition for the MFWorld 'that'
 #if BUILDMODE != 0
@@ -324,12 +327,15 @@ inline
 void MFTransitionSetValue(MFTransition* const that, const int iActor,
   const float val);
 
-// Return the forecasted POV value of the MFTransition 'that' for the 
+// Return the value of the MFTransition 'that' for the 
 // actor 'iActor'.
-float MFTransitionGetForecastValue(const MFTransition* const that, 
+#if BUILDMODE != 0
+inline
+#endif
+float MFTransitionGetValue(const MFTransition* const that, 
   const int iActor);
 
-// Return the egocentric value of the MFWorld 'that' for the 
+// Return the value of the MFWorld 'that' for the 
 // actor 'iActor'.
 #if BUILDMODE != 0
 inline
@@ -340,7 +346,7 @@ float MFWorldGetValue(const MFWorld* const that, const int iActor);
 // current MFWorld of the MiniFrame 'that'
 // Return an undefined MFTransition if the curernt world has no 
 // transition
-const MFModelTransition* MFGetBestTransition(
+const MFModelTransition* MFBestTransition(
   const MiniFrame* const that, const int iActor);
 
 // Print the MFWorld 'that' on the stream 'stream'
