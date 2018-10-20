@@ -21,7 +21,10 @@
 #define MF_DEFAULTTIMEEXPANSION 100
 // time_ms = clock() / MF_MILLISECTOCLOCKS
 #define MF_MILLISECTOCLOCKS (CLOCKS_PER_SEC * 0.001) 
-
+// Default number of transitions per world above which the MonteCarlo
+// algorithm is activated during expansion
+#define MF_NBTRANSMONTECARLO 100
+ 
 // =========== Interface with the model implementation =============
 
 #include "miniframe-model.h"
@@ -94,6 +97,9 @@ typedef struct MiniFrame {
   int _maxDepthExp;
   // Type of expansion, default is MFExpansionTypeValue
   MFExpansionType _expansionType;
+  // Number of transitions above which the Monte Carlo algorithm is 
+  // activated during expansion
+  int _nbTransMonteCarlo;
 } MiniFrame;
 
 
@@ -262,6 +268,9 @@ inline
 #endif
 int MFWorldGetNbTrans(const MFWorld* const that);
 
+// Get the number of expandable transition for the MFWorld 'that'
+int MFWorldGetNbTransExpandable(const MFWorld* const that);
+
 // Get the MFWorld which the MFTransition 'that' is leading to
 #if BUILDMODE != 0
 inline
@@ -398,6 +407,27 @@ MFExpansionType MFGetExpansionType(const MiniFrame* const that);
 inline
 #endif
 void MFSetExpansionType(MiniFrame* const that, const MFExpansionType type);
+
+// Set the nb of transitio to activate MonteCarlo during expansion
+// for the MiniFrame 'that' to 'nb'
+#if BUILDMODE != 0
+inline
+#endif
+void MFSetNbTransMonteCarlo(MiniFrame* const that, const int nb);
+
+// Set the nb of transitions to activate MonteCarlo during expansion
+// for the MiniFrame 'that' to 'nb'
+#if BUILDMODE != 0
+inline
+#endif
+void MFSetNbTransMonteCarlo(MiniFrame* const that, const int nb);
+
+// Get the nb of transitions to activate MonteCarlo during expansion
+// for the MiniFrame 'that'
+#if BUILDMODE != 0
+inline
+#endif
+int MFGetNbTransMonteCarlo(MiniFrame* const that);
 
 // ================ Inliner ====================
 

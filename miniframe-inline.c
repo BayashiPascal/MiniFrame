@@ -584,3 +584,40 @@ void MFSetExpansionType(MiniFrame* const that, const MFExpansionType type) {
   that->_expansionType = type;
 }
 
+// Set the nb of transitions to activate MonteCarlo during expansion
+// for the MiniFrame 'that' to 'nb'
+#if BUILDMODE != 0
+inline
+#endif
+void MFSetNbTransMonteCarlo(MiniFrame* const that, const int nb) {
+#if BUILDMODE == 0
+  if (that == NULL) {
+    MiniFrameErr->_type = PBErrTypeNullPointer;
+    sprintf(MiniFrameErr->_msg, "'that' is null");
+    PBErrCatch(MiniFrameErr);
+  }
+  if (nb <= 0) {
+    MiniFrameErr->_type = PBErrTypeInvalidArg;
+    sprintf(MiniFrameErr->_msg, "'nb' is invalid (%d>0)", nb);
+    PBErrCatch(MiniFrameErr);
+  }
+#endif
+  that->_nbTransMonteCarlo = nb;
+}
+
+// Get the nb of transitions to activate MonteCarlo during expansion
+// for the MiniFrame 'that'
+#if BUILDMODE != 0
+inline
+#endif
+int MFGetNbTransMonteCarlo(MiniFrame* const that) {
+#if BUILDMODE == 0
+  if (that == NULL) {
+    MiniFrameErr->_type = PBErrTypeNullPointer;
+    sprintf(MiniFrameErr->_msg, "'that' is null");
+    PBErrCatch(MiniFrameErr);
+  }
+#endif
+  return that->_nbTransMonteCarlo;
+}
+

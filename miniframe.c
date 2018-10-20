@@ -104,6 +104,7 @@ MiniFrame* MiniFrameCreate(const MFModelStatus* const initStatus) {
   that->_startExpandClock = 0;
   that->_maxDepthExp = -1;
   that->_expansionType = MFExpansionTypeValue;
+  that->_nbTransMonteCarlo = MF_NBTRANSMONTECARLO;
   // Estimate the time used at end of expansion which is the time
   // used to flush a gset
   GSet set = GSetCreateStatic();
@@ -262,6 +263,12 @@ void MFExpand(MiniFrame* that) {
     MFWorld* worldToExpand = GSetDrop(&worldsToExpand);
     // Get the sente for this world
     int sente = MFModelStatusGetSente(MFWorldStatus(worldToExpand));
+    // Get the number of expandable transition
+    int nbTransExpandable = MFWorldGetNbTransExpandable(worldToExpand);
+    // Get the threhsold for expannsion to activate montecarlo when 
+    // there are too many transitions
+    float thresholdMonteCarlo = 
+      (float)MFGetNbTransMonteCarlo(that) / (float)nbTransExpandable;
     // For each transitions from the expanded world and until we have
     // time available
     // Take care of clock() wrapping around
@@ -274,7 +281,8 @@ void MFExpand(MiniFrame* that) {
       // If this transition has not been computed
       const MFTransition* const trans = 
         MFWorldTransition(worldToExpand, iTrans);
-      if (MFTransitionIsExpandable(trans)) {
+      if (MFTransitionIsExpandable(trans) && 
+        rnd() < thresholdMonteCarlo) {
         // Expand through this transition
         MFModelStatus status = 
           MFWorldComputeTransition(worldToExpand, iTrans);
@@ -699,7 +707,7 @@ void MFUpdateForecastValues(MiniFrame* const that,
 #endif
   // Avoid infinite loop
   if (GSetFirstElem(setWorld, world) == NULL)
-    GSetAppend(setWorld, world);
+    GSetAppend(setWorld, (void*)world);
   else
     return;
   // If the world has ancestors
@@ -1058,7 +1066,7 @@ void MFWorldPrintBestStoryln(const MFWorld* const that, const int iActor,
     //fprintf(stream, "\n");
     MFWorldTransPrintln(curWorld, stream);
     // Add the world to the set of visited worlds
-    GSetAppend(&setWorld, curWorld);
+    GSetAppend(&setWorld, (void*)curWorld);
     // If we are not at an end status
     if (!MFModelStatusIsEnd(MFWorldStatus(curWorld))) {
       // Get the sente for the current world
@@ -1122,4 +1130,29 @@ void MFWorldSetValues(MFWorld* const that, const float* const values) {
     }
   }
 }
+
+// Get the number of expandable transition for the MFWorld 'that'
+int MFWorldGetNbTransExpandable(const MFWorld* const that) {
+#if BUILDMODE == 0
+  if (that == NULL) {
+    MiniFrameErr->_type = PBErrTypeNullPointer;
+    sprintf(MiniFrameErr->_msg, "'that' is null");
+    PBErrCatch(MiniFrameErr);
+  }
+#endif
+  // Declare a variable to memorize the result
+  int nb = 0;
+  // Loop on transitions
+  for (int iTrans = MFWorldGetNbTrans(that); iTrans--;) {
+    // Get the transition
+    const MFTransition* const trans = MFWorldTransition(that, iTrans);
+    // If this transition is expandable
+    if (MFTransitionIsExpandable(trans))
+      // Increment the result
+      ++nb;
+  }
+  // Return the result
+  return nb;
+}
+
 

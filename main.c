@@ -224,6 +224,7 @@ void UnitTestMiniFrameCreateFree() {
     mf->_timeEndExpansion <= 0.0 ||
     mf->_maxDepthExp != -1 ||
     mf->_expansionType != MFExpansionTypeValue ||
+    mf->_nbTransMonteCarlo != MF_NBTRANSMONTECARLO ||
     mf->_reuseWorld != false) {
     MiniFrameErr->_type = PBErrTypeUnitTestFailed;
     sprintf(MiniFrameErr->_msg, "MiniFrameCreate failed");
@@ -375,6 +376,17 @@ void UnitTestMiniFrameGetSet() {
   if (MFGetExpansionType(mf) != MFExpansionTypeWidth) {
     MiniFrameErr->_type = PBErrTypeUnitTestFailed;
     sprintf(MiniFrameErr->_msg, "MFSetExpansionType failed");
+    PBErrCatch(MiniFrameErr);
+  }
+  if (MFGetNbTransMonteCarlo(mf) != mf->_nbTransMonteCarlo) {
+    MiniFrameErr->_type = PBErrTypeUnitTestFailed;
+    sprintf(MiniFrameErr->_msg, "MFGetNbTransMonteCarlo failed");
+    PBErrCatch(MiniFrameErr);
+  }
+  MFSetNbTransMonteCarlo(mf, 10);
+  if (MFGetNbTransMonteCarlo(mf) != 10) {
+    MiniFrameErr->_type = PBErrTypeUnitTestFailed;
+    sprintf(MiniFrameErr->_msg, "MFSetNbTransMonteCarlo failed");
     PBErrCatch(MiniFrameErr);
   }
   MiniFrameFree(&mf);
