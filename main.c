@@ -52,6 +52,15 @@ void UnitTestMFTransitionIsExpandable() {
     sprintf(MiniFrameErr->_msg, "MFTransitionIsExpandable failed");
     PBErrCatch(MiniFrameErr);
   }
+  act._toWorld = NULL;
+  world->_status._pos = world->_status._tgt;
+  world->_transitions[0]._toWorld = world;
+  if (MFTransitionIsExpandable(&act)) {
+    MiniFrameErr->_type = PBErrTypeUnitTestFailed;
+    sprintf(MiniFrameErr->_msg, "MFTransitionIsExpandable failed");
+    PBErrCatch(MiniFrameErr);
+  }
+  world->_transitions[0]._toWorld = NULL;
   MFTransitionFreeStatic(&act);
   MFWorldFree(&world);
 
