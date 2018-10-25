@@ -537,6 +537,53 @@ void MFWorldSetTransitionToWorld(
       MFWorldGetValue(toWorld, iActor));
 }
 
+// Return true if the MFTransition 'that' is expandable, i.e. its
+// 'toWorld' is null, else return false
+bool MFTransitionIsExpandable(const MFTransition* const that) {
+#if BUILDMODE == 0
+  if (that == NULL) {
+    MiniFrameErr->_type = PBErrTypeNullPointer;
+    sprintf(MiniFrameErr->_msg, "'that' is null");
+    PBErrCatch(MiniFrameErr);
+  }
+#endif
+  // If the transition has already been expanded
+  if (MFTransitionToWorld(that) != NULL) {
+    // Return false
+    return false;
+  // Else, the transition has not been expanded yet
+  } else {
+    // Get the origin of the transition
+    const MFWorld* fromWorld = MFTransitionFromWorld(that);
+    // Declare a variable to memorize if the transition has a brother
+    // which leads to an end world
+    bool hasEndWorldBrother = false;
+    // For each brother transition, until we have found an end world
+    for (int iTrans = MFWorldGetNbTrans(fromWorld); 
+      iTrans-- && !hasEndWorldBrother;) {
+      // Get the brother transition's toWorld
+      const MFWorld* brother = 
+        MFTransitionToWorld(MFWorldTransition(fromWorld, iTrans));
+      // If the brother world is an end world
+      if (brother != NULL &&
+        MFModelStatusIsEnd(MFWorldStatus(brother))) {
+        // Set the flag
+        hasEndWorldBrother = true;
+      }
+    }
+    // If the transition has a brother leading to an end world
+    if (hasEndWorldBrother)
+      // This transition is not expandable
+      return false;
+    // Else, the transition has no brother leading to an end world
+    else
+      // This transition is expandable
+      return true;
+  }
+  // Should never reach here, but just in case...
+  return true;
+}
+
 // Return the forecasted value of the MFWorld 'that' for the 
 // actor 'iActor'.
 // This is the best value of the transitions from this world,
@@ -649,7 +696,7 @@ const MFModelTransition* MFWorldBestTransition(
     // Declare a variable to memorize the transition
     const MFTransition* const trans = MFWorldTransition(that, iTrans);
     // If this transitions has been expanded
-    if (!MFTransitionIsExpandable(trans)) {
+    if (MFTransitionIsExpanded(trans)) {
       // Get the value of the transition from the point of view of 
       // the requested actor
       float val = MFTransitionGetValue(trans, iActor);
@@ -1154,5 +1201,6 @@ int MFWorldGetNbTransExpandable(const MFWorld* const that) {
   // Return the result
   return nb;
 }
+
 
 

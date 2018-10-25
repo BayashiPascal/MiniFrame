@@ -293,9 +293,6 @@ const MFWorld* MFTransitionFromWorld(const MFTransition* const that);
 
 // Return true if the MFTransition 'that' is expandable, i.e. its
 // 'toWorld' is null, else return false
-#if BUILDMODE != 0
-inline
-#endif
 bool MFTransitionIsExpandable(const MFTransition* const that);
 
 // Get the 'iTrans' MFTransition of the MFWorld 'that'
@@ -428,6 +425,12 @@ void MFSetNbTransMonteCarlo(MiniFrame* const that, const int nb);
 inline
 #endif
 int MFGetNbTransMonteCarlo(MiniFrame* const that);
+
+// Return true if the MFTransition is expanded, false else
+#if BUILDMODE != 0
+inline
+#endif
+bool MFTransitionIsExpanded(const MFTransition* const that);
 
 // ================ Inliner ====================
 

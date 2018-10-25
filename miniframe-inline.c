@@ -249,22 +249,6 @@ float MFGetPercWordReused(const MiniFrame* const that) {
   return that->_percWorldReused;
 }
 
-// Return true if the MFTransition 'that' is expandable, i.e. its
-// 'toWorld' is null, else return false
-#if BUILDMODE != 0
-inline
-#endif
-bool MFTransitionIsExpandable(const MFTransition* const that) {
-#if BUILDMODE == 0
-  if (that == NULL) {
-    MiniFrameErr->_type = PBErrTypeNullPointer;
-    sprintf(MiniFrameErr->_msg, "'that' is null");
-    PBErrCatch(MiniFrameErr);
-  }
-#endif
-  return (that->_toWorld == NULL ? true : false);
-}
-
 // Get the 'iTrans' MFTransition of the MFWorld 'that'
 #if BUILDMODE != 0
 inline
@@ -619,5 +603,20 @@ int MFGetNbTransMonteCarlo(MiniFrame* const that) {
   }
 #endif
   return that->_nbTransMonteCarlo;
+}
+
+// Return true if the MFTransition is expanded, false else
+#if BUILDMODE != 0
+inline
+#endif
+bool MFTransitionIsExpanded(const MFTransition* const that) {
+#if BUILDMODE == 0
+  if (that == NULL) {
+    MiniFrameErr->_type = PBErrTypeNullPointer;
+    sprintf(MiniFrameErr->_msg, "'that' is null");
+    PBErrCatch(MiniFrameErr);
+  }
+#endif
+  return (that->_toWorld != NULL);
 }
 

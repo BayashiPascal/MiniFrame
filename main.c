@@ -37,23 +37,48 @@ void UnitTestMFTransitionCreateFree() {
 
 void UnitTestMFTransitionIsExpandable() {
 
-  MFWorld world;
+  MFModelStatus status;
+  MFWorld* world = MFWorldCreate(&status);
   MFModelTransition trans = {._move = 1};
-  MFTransition act = MFTransitionCreateStatic(&world, &trans);
+  MFTransition act = MFTransitionCreateStatic(world, &trans);
   if (!MFTransitionIsExpandable(&act)) {
     MiniFrameErr->_type = PBErrTypeUnitTestFailed;
     sprintf(MiniFrameErr->_msg, "MFTransitionIsExpandable failed");
     PBErrCatch(MiniFrameErr);
   }
-  act._toWorld = &world;
+  act._toWorld = world;
   if (MFTransitionIsExpandable(&act)) {
     MiniFrameErr->_type = PBErrTypeUnitTestFailed;
     sprintf(MiniFrameErr->_msg, "MFTransitionIsExpandable failed");
     PBErrCatch(MiniFrameErr);
   }
   MFTransitionFreeStatic(&act);
+  MFWorldFree(&world);
 
   printf("UnitTestMFTransitionIsExpandable OK\n");
+}
+
+void UnitTestMFTransitionIsExpanded() {
+
+  MFModelStatus status;
+  MFWorld* world = MFWorldCreate(&status);
+  MFModelTransition trans = {._move = 1};
+  MFTransition act = MFTransitionCreateStatic(world, &trans);
+  if (MFTransitionIsExpanded(&act)) {
+    MiniFrameErr->_type = PBErrTypeUnitTestFailed;
+    sprintf(MiniFrameErr->_msg, "MFTransitionIsExpanded failed");
+    PBErrCatch(MiniFrameErr);
+  }
+  act._toWorld = world;
+  if (!MFTransitionIsExpanded(&act)) {
+    MiniFrameErr->_type = PBErrTypeUnitTestFailed;
+    sprintf(MiniFrameErr->_msg, "MFTransitionIsExpanded failed");
+    PBErrCatch(MiniFrameErr);
+  }
+  MFTransitionFreeStatic(&act);
+  MFWorldFree(&world);
+
+  printf("UnitTestMFTransitionIsExpanded OK\n");
 }
 
 void UnitTestMFTransitionGetSet() {
@@ -98,6 +123,7 @@ void UnitTestMFTransitionGetSet() {
 void UnitTestMFTransition() {
   UnitTestMFTransitionCreateFree();
   UnitTestMFTransitionIsExpandable();
+  UnitTestMFTransitionIsExpanded();
   UnitTestMFTransitionGetSet();
   printf("UnitTestMFTransition OK\n");
 }
