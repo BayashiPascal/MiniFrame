@@ -492,8 +492,8 @@ bool MFWorldIsPrunedDuringExpansion(const MFWorld* const that,
   bool ret = false;
   // Get the origin world of the transition
   const MFWorld* const fatherWorld = MFTransitionFromWorld(trans);
-  // Get the sente of the world
-  int sente = MFModelStatusGetSente(MFWorldStatus(that));
+  // Get the sente of the father world
+  int sente = MFModelStatusGetSente(MFWorldStatus(fatherWorld));
   // Declare a variable to memorize the maximum value of brothers world
   float max = 0.0;
   const MFWorld* bestBrother = NULL;

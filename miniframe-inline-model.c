@@ -1,0 +1,1 @@
+/home/bayashi/GitHub/MiniFrame/Examples/BasicExample/miniframe-inline-model.c
