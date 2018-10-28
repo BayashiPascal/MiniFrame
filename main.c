@@ -260,6 +260,7 @@ void UnitTestMiniFrameCreateFree() {
     mf->_maxDepthExp != -1 ||
     mf->_expansionType != MFExpansionTypeValue ||
     mf->_nbTransMonteCarlo != MF_NBTRANSMONTECARLO ||
+    mf->_pruningDeltaVal != MF_PRUNINGDELTAVAL ||
     mf->_reuseWorld != false) {
     MiniFrameErr->_type = PBErrTypeUnitTestFailed;
     sprintf(MiniFrameErr->_msg, "MiniFrameCreate failed");
@@ -422,6 +423,17 @@ void UnitTestMiniFrameGetSet() {
   if (MFGetNbTransMonteCarlo(mf) != 10) {
     MiniFrameErr->_type = PBErrTypeUnitTestFailed;
     sprintf(MiniFrameErr->_msg, "MFSetNbTransMonteCarlo failed");
+    PBErrCatch(MiniFrameErr);
+  }
+  if (MFGetPruningDeltaVal(mf) != mf->_pruningDeltaVal) {
+    MiniFrameErr->_type = PBErrTypeUnitTestFailed;
+    sprintf(MiniFrameErr->_msg, "MFGetPruningDeltaVal failed");
+    PBErrCatch(MiniFrameErr);
+  }
+  MFSetPruningDeltaVal(mf, 10.0);
+  if (!ISEQUALF(MFGetPruningDeltaVal(mf), 10.0)) {
+    MiniFrameErr->_type = PBErrTypeUnitTestFailed;
+    sprintf(MiniFrameErr->_msg, "MFSetPruningDeltaVal failed");
     PBErrCatch(MiniFrameErr);
   }
   MiniFrameFree(&mf);

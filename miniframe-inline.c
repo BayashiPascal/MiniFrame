@@ -594,7 +594,7 @@ void MFSetNbTransMonteCarlo(MiniFrame* const that, const int nb) {
 #if BUILDMODE != 0
 inline
 #endif
-int MFGetNbTransMonteCarlo(MiniFrame* const that) {
+int MFGetNbTransMonteCarlo(const MiniFrame* const that) {
 #if BUILDMODE == 0
   if (that == NULL) {
     MiniFrameErr->_type = PBErrTypeNullPointer;
@@ -619,4 +619,36 @@ bool MFTransitionIsExpanded(const MFTransition* const that) {
 #endif
   return (that->_toWorld != NULL);
 }
+
+// Set the pruning threshold during expansion for the MiniFrame 'that' 
+// to 'val'
+#if BUILDMODE != 0
+inline
+#endif
+void MFSetPruningDeltaVal(MiniFrame* const that, const float val) {
+#if BUILDMODE == 0
+  if (that == NULL) {
+    MiniFrameErr->_type = PBErrTypeNullPointer;
+    sprintf(MiniFrameErr->_msg, "'that' is null");
+    PBErrCatch(MiniFrameErr);
+  }
+#endif
+  that->_pruningDeltaVal = val;
+}
+
+// Get the pruning threshold during expansion for the MiniFrame 'that'
+#if BUILDMODE != 0
+inline
+#endif
+float MFGetPruningDeltaVal(const MiniFrame* const that) {
+#if BUILDMODE == 0
+  if (that == NULL) {
+    MiniFrameErr->_type = PBErrTypeNullPointer;
+    sprintf(MiniFrameErr->_msg, "'that' is null");
+    PBErrCatch(MiniFrameErr);
+  }
+#endif
+  return that->_pruningDeltaVal;
+}
+
 

@@ -24,6 +24,8 @@
 // Default number of transitions per world above which the MonteCarlo
 // algorithm is activated during expansion
 #define MF_NBTRANSMONTECARLO 100
+// Default value for pruning during expansion
+#define MF_PRUNINGDELTAVAL 1000.0
  
 // =========== Interface with the model implementation =============
 
@@ -100,6 +102,8 @@ typedef struct MiniFrame {
   // Number of transitions above which the Monte Carlo algorithm is 
   // activated during expansion
   int _nbTransMonteCarlo;
+  // Value for pruning during expansion
+  float _pruningDeltaVal;
 } MiniFrame;
 
 
@@ -424,13 +428,26 @@ void MFSetNbTransMonteCarlo(MiniFrame* const that, const int nb);
 #if BUILDMODE != 0
 inline
 #endif
-int MFGetNbTransMonteCarlo(MiniFrame* const that);
+int MFGetNbTransMonteCarlo(const MiniFrame* const that);
 
 // Return true if the MFTransition is expanded, false else
 #if BUILDMODE != 0
 inline
 #endif
 bool MFTransitionIsExpanded(const MFTransition* const that);
+
+// Set the pruning threshold during expansion for the MiniFrame 'that' 
+// to 'val'
+#if BUILDMODE != 0
+inline
+#endif
+void MFSetPruningDeltaVal(MiniFrame* const that, const float val);
+
+// Get the pruning threshold during expansion for the MiniFrame 'that'
+#if BUILDMODE != 0
+inline
+#endif
+float MFGetPruningDeltaVal(const MiniFrame* const that);
 
 // ================ Inliner ====================
 
