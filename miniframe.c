@@ -157,8 +157,9 @@ MFWorld* MFWorldCreate(const MFModelStatus* const status) {
   // Set the possible transitions from this world 
   MFModelTransition transitions[MF_NBMAXTRANSITION];
   MFModelStatusGetTrans(status, transitions, &(that->_nbTransition));
+  MFTransition* thatTransitions = that->_transitions;
   for (int iTrans = that->_nbTransition; iTrans--;)
-    that->_transitions[iTrans] = 
+    thatTransitions[iTrans] = 
       MFTransitionCreateStatic(that, transitions + iTrans);
   // Return the new MFWorld
   return that;
@@ -182,8 +183,9 @@ MFTransition MFTransitionCreateStatic(const MFWorld* const world,
   that._transition = *transition;
   that._fromWorld = (MFWorld*)world;
   that._toWorld = NULL;
+  float* thatValues = that._values;
   for (int iActor = MF_NBMAXACTOR; iActor--;)
-    that._values[iActor] = 0.0;
+    thatValues[iActor] = 0.0;
   // Return the new MFTransition
   return that;
 }
@@ -208,9 +210,10 @@ void MFWorldFree(MFWorld** that) {
   // Free memory
   GSetFlush(&((*that)->_sources));
   MFModelStatusFreeStatic(&((*that)->_status));
+  MFTransition* thatTransitions = (*that)->_transitions;
   for (int iAct = (*that)->_nbTransition; iAct--;) {
-    if ((*that)->_transitions[iAct]._toWorld != NULL)
-      MFTransitionFreeStatic((*that)->_transitions + iAct);
+    if (thatTransitions[iAct]._toWorld != NULL)
+      MFTransitionFreeStatic(thatTransitions + iAct);
   }
   free(*that);
   *that = NULL;
@@ -476,7 +479,7 @@ bool MFWorldIsPrunedDuringExpansion(const MFWorld* const that,
     sprintf(MiniFrameErr->_msg, "'trans' is null");
     PBErrCatch(MiniFrameErr);
   }
-  if (MFTransitionToWorld(trans) != world) {
+  if (MFTransitionToWorld(trans) != that) {
     MiniFrameErr->_type = PBErrTypeInvalidArg;
     sprintf(MiniFrameErr->_msg, 
       "The transition doesn't reach the world");
@@ -879,6 +882,11 @@ const MFModelTransition* MFWorldBestTransition(
       // Get the value of the transition from the point of view of 
       // the requested actor
       float val = MFTransitionGetValue(trans, iActor);
+      for (int jActor = MFModelStatusGetNbActor(MFWorldStatus(that));
+        jActor--;) {
+        if (iActor != jActor)
+          val -= MFTransitionGetValue(trans, jActor);
+      }
       // Add some random perturbation to avoid always picking
       // the same transitions between those with equal values
       val += rnd() * PBMATH_EPSILON;
@@ -1346,13 +1354,12 @@ void MFWorldSetValues(MFWorld* const that, const float* const values) {
     PBErrCatch(MiniFrameErr);
   }
 #endif
+  float* thatValues = that->_values;
   for (int iActor = MF_NBMAXACTOR; iActor--;) {
-    that->_values[iActor] = 0.0;
+    thatValues[iActor] = values[iActor];
     for (int jActor = MF_NBMAXACTOR; jActor--;) {
-      if (iActor == jActor)
-        that->_values[iActor] += values[jActor];
-      else
-        that->_values[iActor] -= values[jActor];
+      if (iActor != jActor)
+        thatValues[iActor] -= values[jActor];
     }
   }
 }
