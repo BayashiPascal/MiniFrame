@@ -874,7 +874,7 @@ const MFModelTransition* MFWorldBestTransition(
   // Declare a variable to memorize the best transition
   const MFTransition* bestTrans = NULL;
   // Loop on transitions
-  for (int iTrans = MFWorldGetNbTrans(that); iTrans--;) {
+  for (int iTrans = 0; iTrans < MFWorldGetNbTrans(that); ++iTrans) {
     // Declare a variable to memorize the transition
     const MFTransition* const trans = MFWorldTransition(that, iTrans);
     // If this transitions has been expanded
@@ -887,9 +887,6 @@ const MFModelTransition* MFWorldBestTransition(
         if (iActor != jActor)
           val -= MFTransitionGetValue(trans, jActor);
       }
-      // Add some random perturbation to avoid always picking
-      // the same transitions between those with equal values
-      val += rnd() * PBMATH_EPSILON;
       // If it's not the first considered transition
       if (bestTrans != NULL) {
         // If the value is better
@@ -1134,21 +1131,24 @@ void MFSetCurWorld(MiniFrame* const that,
 #endif
   // Declare a flag to memorize if we have found the world
   bool flagFound = false;
-  // Loop on computed worlds
-  GSetIterForward iter = GSetIterForwardCreateStatic(MFWorlds(that));
-  do {
-    MFWorld* world = GSetIterGet(&iter);
-    // If this is the current world
-    if (MFModelStatusIsSame(MFWorldStatus(world), status)) {
-      // Ensure that the status is exactly the same by copying the 
-      // MFModelStatus struct, in case MFModelStatusIsSame refers only
-      // to a subset of properties of the MFModelStatus
-      memcpy(world, status, sizeof(MFModelStatus));
-      // Update the curWorld in MiniFrame
-      that->_curWorld = world;
-      flagFound = true;
-    }
-  } while (!flagFound && GSetIterStep(&iter));
+  // If there are computed worlds
+  if (MFGetNbComputedWorld(that) > 0) {
+    // Loop on computed worlds
+    GSetIterForward iter = GSetIterForwardCreateStatic(MFWorlds(that));
+    do {
+      MFWorld* world = GSetIterGet(&iter);
+      // If this is the current world
+      if (MFModelStatusIsSame(MFWorldStatus(world), status)) {
+        // Ensure that the status is exactly the same by copying the 
+        // MFModelStatus struct, in case MFModelStatusIsSame refers only
+        // to a subset of properties of the MFModelStatus
+        memcpy(world, status, sizeof(MFModelStatus));
+        // Update the curWorld in MiniFrame
+        that->_curWorld = world;
+        flagFound = true;
+      }
+    } while (!flagFound && GSetIterStep(&iter));
+  }
   // If we haven't found the searched status
   if (!flagFound) {
     // Create a new MFWorld with the current status
