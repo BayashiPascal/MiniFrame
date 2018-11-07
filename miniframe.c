@@ -103,11 +103,9 @@ MiniFrame* MiniFrameCreate(const MFModelStatus* const initStatus) {
   MFSetMaxTimeExpansion(that, MF_DEFAULTTIMEEXPANSION);
   that->_curWorld = MFWorldCreate(initStatus);
   that->_worlds = GSetCreateStatic();
-  MFAddWorld(that, MFCurWorld(that), MFModelStatusGetSente(initStatus));
-  that->_timeSearchWorld = MF_DEFAULTTIMEEXPANSION;
-  that->_nbWorldExpanded = 0;
-  that->_nbWorldUnexpanded = 0;
-  that->_nbRemovedWorld = 0;
+  that->_worldsToExpand = GSetCreateStatic();
+  that->_worldsToFree = GSetCreateStatic();
+  MFAddWorldToExpand(that, MFCurWorld(that));
   that->_timeUnusedExpansion = 0.0;
   that->_reuseWorld = false;
   that->_percWorldReused = 0.0;
@@ -199,6 +197,7 @@ void MiniFrameFree(MiniFrame** that) {
     MFWorld* world = GSetPop(&((*that)->_worlds));
     MFWorldFree(&world);
   }
+  GSetFlush(&((*that)->_worldsToExpand));
   free(*that);
   *that = NULL;
 }
@@ -245,96 +244,89 @@ void MFExpand(MiniFrame* that) {
   double maxTimeOneStep = 0.0;
   // Free the disposable worlds
   MFFreeDisposableWorld(that);
-  // Create the set of world instances to be expanded, ordered by 
-  // world's value from the point of view of the preempting actor
-  // for each world
-  // The time available for this step is limited to avoid spending
-  // time to search for worlds to expand and finally not having time
-  // to compute them
-  clock_t clockLimit = clockStart + 
-    that->_timeSearchWorld * MF_MILLISECTOCLOCKS;
-  GSet worldsToExpand = MFGetWorldsToExpand(that, clockLimit);
-  // Memorize the number of worlds to expand
-  int nbWorldToExpand = GSetNbElem(&worldsToExpand);
-  // Declare a variable to memorize the time spend expanding
+  // Declare a variable to memorize the time spent expanding
   double timeUsed = 
     ((double)(clock() - clockStart)) / MF_MILLISECTOCLOCKS;
   // Declare a variable to memorize the number of reused worlds
   int nbReusedWorld = 0;
-  // Declare a variable to memorie the number of worlds to expand added
-  // to the original set
-  int nbWorldToExpandPost = 0;
+  // Declare a variable to memorize the number of worlds searched for 
+  // reuse
+  int nbWorldSearchForReuse = 0;
   // Loop until we have time for one more step of expansion or there
   // is no world to expand
   // Take care of clock() wrapping around
   while (timeUsed >= 0.0 &&
-    timeUsed + maxTimeOneStep + 
-    MFGetTimeEndExpansion(that) * GSetNbElem(&worldsToExpand) < 
-    MFGetMaxTimeExpansion(that) &&
-    GSetNbElem(&worldsToExpand) > 0) {
+    timeUsed + maxTimeOneStep < MFGetMaxTimeExpansion(that) &&
+    GSetNbElem(MFWorldsToExpand(that)) > 0) {
     // Declare a variable to memorize the time at the beginning of one
     // step of expansion
     clock_t clockStartLoop = clock();
     // Drop the world to expand with highest value
-    MFWorld* worldToExpand = GSetDrop(&worldsToExpand);
-    // Get the sente for this world
-    int sente = MFModelStatusGetSente(MFWorldStatus(worldToExpand));
-    // Get the number of expandable transition
-    int nbTransExpandable = MFWorldGetNbTransExpandable(worldToExpand);
-    // Get the threhsold for expannsion to activate montecarlo when 
-    // there are too many transitions
-    float thresholdMonteCarlo = 
-      (float)MFGetNbTransMonteCarlo(that) / (float)nbTransExpandable;
-    // For each transitions from the expanded world and until we have
-    // time available
-    // Take care of clock() wrapping around
-    for (int iTrans = 0; iTrans < MFWorldGetNbTrans(worldToExpand) &&
-      timeUsed >= 0.0 &&
-      timeUsed + maxTimeOneStep + 
-      MFGetTimeEndExpansion(that) * GSetNbElem(&worldsToExpand) < 
-      MFGetMaxTimeExpansion(that); 
-      ++iTrans) {
-      // If this transition has not been computed
-      const MFTransition* const trans = 
-        MFWorldTransition(worldToExpand, iTrans);
-      if (MFTransitionIsExpandable(trans) && 
-        rnd() < thresholdMonteCarlo) {
-        // Expand through this transition
-        MFModelStatus status = 
-          MFWorldComputeTransition(worldToExpand, iTrans);
-        // If the resulting status has not already been computed
-        MFWorld* sameWorld = MFSearchWorld(that, &status);
-        if (sameWorld == NULL) {
-          // Create a MFWorld for the new status
-          MFWorld* expandedWorld = MFWorldCreate(&status);
-          // Add the world to the set of computed world 
-          MFAddWorld(that, expandedWorld, sente);
-          // Set the expanded world as the result of the transition
-          MFWorldSetTransitionToWorld(
-            worldToExpand, iTrans, expandedWorld);
-          // If it's not an end status world and we haven't reached
-          // the expansion limit
-          if ((that->_maxDepthExp < 0 || 
-            worldToExpand->_depth < that->_maxDepthExp) &&
-            !MFModelStatusIsEnd(MFWorldStatus(expandedWorld))) {
-            // Add the world to the set of worlds to expand
-            ++nbWorldToExpand;
-            expandedWorld->_depth = worldToExpand->_depth + 1;
-            if (MFGetExpansionType(that) == MFExpansionTypeValue) {
-              float value = MFWorldGetValue(expandedWorld, sente);
-              GSetAddSort(&worldsToExpand, expandedWorld, value);
-            } else if (MFGetExpansionType(that) == MFExpansionTypeWidth) {
-              GSetPush(&worldsToExpand, expandedWorld);
-            }
-            ++nbWorldToExpandPost;
-          }
-        } else {
-          // Increment the number of reused world
+    MFWorld* worldToExpand = GSetDrop((GSet*)MFWorldsToExpand(that));
+    // If this world is disposable
+    if (GSetNbElem(MFWorldSources(worldToExpand)) == 0 || 
+        MFModelStatusIsDisposable(MFWorldStatus(worldToExpand), 
+        MFWorldStatus(MFCurWorld(that)), MFGetNbWorldsToExpand(that))) {
+      // Add it to the worlds to free
+      MFAddWorldToFree(that, worldToExpand);
+    } else {
+      // Get the sente for this world
+      int sente = MFModelStatusGetSente(MFWorldStatus(worldToExpand));
+      // Get the number of expandable transition
+      int nbTransExpandable = MFWorldGetNbTransExpandable(worldToExpand);
+      // Get the threshold for expannsion to activate montecarlo when 
+      // there are too many transitions
+      float thresholdMonteCarlo = 
+        (float)MFGetNbTransMonteCarlo(that) / (float)nbTransExpandable;
+      // For each transitions from the expanded world and until we have
+      // time available
+      // Take care of clock() wrapping around
+      for (int iTrans = 0; iTrans < MFWorldGetNbTrans(worldToExpand) &&
+        timeUsed >= 0.0 &&
+        timeUsed + maxTimeOneStep + 
+        MFGetTimeEndExpansion(that) * MFGetNbWorldsToExpand(that) < 
+        MFGetMaxTimeExpansion(that); 
+        ++iTrans) {
+        // If this transition has not been computed yet
+        const MFTransition* const trans = 
+          MFWorldTransition(worldToExpand, iTrans);
+        if (MFTransitionIsExpandable(trans) && 
+          (thresholdMonteCarlo >= 1.0 || rnd() < thresholdMonteCarlo)) {
+          // Decrement the number of expandable transitions for this world
+          --nbTransExpandable;
+          // Expand through this transition
+          MFModelStatus status = 
+            MFWorldComputeTransition(worldToExpand, iTrans);
+          // If the resulting status has not already been computed
+          MFWorld* sameWorld = MFSearchWorld(that, &status);
+          // Increment the number of world searched for reuse
           ++nbReusedWorld;
-          // Set the already computed one as the result of the 
-          // transition 
-          MFWorldSetTransitionToWorld(worldToExpand, iTrans, sameWorld);
+          if (sameWorld == NULL) {
+            // Create a MFWorld for the new status
+            MFWorld* expandedWorld = MFWorldCreate(&status);
+            // Add the world to the set of worlds to expand 
+            MFAddWorldToExpand(that, expandedWorld);
+            // Set the expanded world as the result of the transition
+            MFWorldSetTransitionToWorld(
+              worldToExpand, iTrans, expandedWorld);
+          } else {
+            // Increment the number of reused world
+            ++nbReusedWorld;
+            // Set the already computed one as the result of the 
+            // transition 
+            MFWorldSetTransitionToWorld(worldToExpand, iTrans, sameWorld);
+          }
         }
+      }
+      // If all the expandable transitions have been expanded
+      if (nbTransExpandable == 0) {
+        // Move the expanded world from the worlds to expands to the 
+        // computed worlds
+        MFAddWorld(that, worldToExpand, sente);
+      // Else, the world still needs to be expanded
+      } else {
+        // Put it back to the worlds to expand
+        MFAddWorldToExpand(that, worldToExpand);
       }
       // Update the total time used from beginning of expansion 
       timeUsed = 
@@ -363,32 +355,6 @@ void MFExpand(MiniFrame* that) {
     timeUsed = 
       ((double)(clockEndLoop - clockStart)) / MF_MILLISECTOCLOCKS;
   }
-  // Memorize the remaining number of worlds to expand
-  int nbRemainingWorldToExpand = 
-    MAX(0, GSetNbElem(&worldsToExpand) - nbWorldToExpandPost);
-  // Update the total time used from beginning of expansion 
-  timeUsed = ((double)(clock() - clockStart)) / MF_MILLISECTOCLOCKS;
-  // Update the percentage of time allocated to searching for worlds
-  // to expand
-  // If there was worlds to expand
-  if (nbWorldToExpand > 0) {
-    // If we could expand all the worlds
-    if (nbRemainingWorldToExpand == 0) {
-      that->_timeSearchWorld *= 
-        MFGetMaxTimeExpansion(that) / timeUsed;
-      if (that->_timeSearchWorld > MFGetMaxTimeExpansion(that))
-        that->_timeSearchWorld = MFGetMaxTimeExpansion(that);
-    // Else, we had not enough time to expand all the worlds
-    } else {
-      that->_timeSearchWorld *= 
-        (float)nbRemainingWorldToExpand / (float)nbWorldToExpand;
-    }
-  } else {
-    that->_timeSearchWorld = 
-      MAX(0, MFGetMaxTimeExpansion(that) - timeUsed);
-  }
-  // Empty the list of worlds to expand
-  GSetFlush(&worldsToExpand);
   // Update the total time used from beginning of expansion 
   timeUsed = ((double)(clock() - clockStart)) / MF_MILLISECTOCLOCKS;
   // Take care of clock() wrapping around
@@ -396,14 +362,8 @@ void MFExpand(MiniFrame* that) {
     timeUsed = MFGetMaxTimeExpansion(that);
   // Telemetry for debugging
   that->_timeUnusedExpansion = MFGetMaxTimeExpansion(that) - timeUsed;
-  that->_nbWorldExpanded = 
-    nbWorldToExpand - nbRemainingWorldToExpand + nbReusedWorld;
-  that->_nbWorldUnexpanded = nbRemainingWorldToExpand;
-  if (that->_nbWorldExpanded > 0)
-    that->_percWorldReused = 
-      (float)nbReusedWorld / (float)(that->_nbWorldExpanded);
-  else
-    that->_percWorldReused = 0.0;
+  that->_percWorldReused = 
+    ((float)nbReusedWorld) / ((float)nbWorldSearchForReuse);
 }
 
 // Get the set of worlds to be expanded (having at least one transition
@@ -679,6 +639,16 @@ MFWorld* MFSearchWorld(const MiniFrame* const that,
         sameWorld = world;
       }
     } while (sameWorld == NULL && GSetIterStep(&iter));
+    if (sameWorld == NULL) {
+      iter = GSetIterForwardCreateStatic(MFWorldsToExpand(that));
+      do {
+        MFWorld* world = GSetIterGet(&iter);
+        // If this world is the same as the searched one
+        if (MFModelStatusIsSame(status, MFWorldStatus(world))) {
+          sameWorld = world;
+        }
+      } while (sameWorld == NULL && GSetIterStep(&iter));
+    }
   }
   // Return the found world
   return sameWorld;
@@ -1172,52 +1142,24 @@ void MFFreeDisposableWorld(MiniFrame* const that) {
     PBErrCatch(MiniFrameErr);
   }
 #endif
-  // Declare a flag to memorize if we have found a disposable world
-  bool flag = false;
-  // Declare a flag to manage the deletion of element in the set of
-  // computed worlds
-  bool moved = false;
-  //Declare a variable to memorize the number of removed world
-  int nbRemovedWorld = 0;
-  // Loop until we haven't found any disposable world
-  do {
-    // Reset the flag to memorize if we have found disposable world
-    flag = false;
-    // Loop on computed worlds
-    GSetIterForward iter = GSetIterForwardCreateStatic(MFWorlds(that));
-    do {
-      MFWorld* world = GSetIterGet(&iter);
-      moved = false;
-      // If it's a disposable world
-      if (that->_curWorld != world && 
-        (GSetNbElem(MFWorldSources(world)) == 0 || 
-        MFModelStatusIsDisposable(MFWorldStatus(world), 
-        MFWorldStatus(MFCurWorld(that)), MFGetNbComputedWorld(that)))) {
-        // Remove this world from its sources
-        while (GSetNbElem(MFWorldSources(world)) > 0) {
-          MFTransition* transSource = MFWorldPopSource(world);
-          MFTransitionSetToWorld(transSource, NULL);
-        }
-        // Remove this world from the sources of its next worlds
-        for (int iTrans = MFWorldGetNbTrans(world); iTrans--;) {
-          const MFTransition* trans = MFWorldTransition(world, iTrans);
-          MFWorld* toWorld = (MFWorld*)MFTransitionToWorld(trans);
-          if (toWorld != NULL)
-            MFWorldRemoveSource(toWorld, trans);
-        }
-        // Remove this world from the computed worlds
-        moved = GSetIterRemoveElem(&iter);
-        // Free memory
-        MFWorldFree(&world);
-        // Increment the number of removed world
-        ++nbRemovedWorld;
-        // Memorize we have found a disposable world
-        flag = true;
-      }
-    } while (moved || GSetIterStep(&iter));
-  } while (flag == true);
-  // Update the number of removed world
-  that->_nbRemovedWorld = nbRemovedWorld;
+  // Loop on free-able worlds
+  while (GSetNbElem(MFWorldsToFree(that))) {
+    MFWorld* world = GSetPop((GSet*)MFWorldsToFree(that));
+    // Remove this world from its sources
+    while (GSetNbElem(MFWorldSources(world)) > 0) {
+      MFTransition* transSource = MFWorldPopSource(world);
+      MFTransitionSetToWorld(transSource, NULL);
+    }
+    // Remove this world from the sources of its next worlds
+    for (int iTrans = MFWorldGetNbTrans(world); iTrans--;) {
+      const MFTransition* trans = MFWorldTransition(world, iTrans);
+      MFWorld* toWorld = (MFWorld*)MFTransitionToWorld(trans);
+      if (toWorld != NULL)
+        MFWorldRemoveSource(toWorld, trans);
+    }
+    // Free memory
+    MFWorldFree(&world);
+  }
 }
 
 // Remove the MFTransition 'source' from the sources of the 

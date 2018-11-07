@@ -32,12 +32,11 @@ float MFGetTimeUnusedExpansion(const MiniFrame* const that) {
   return that->_timeUnusedExpansion;
 }
 
-// Get the time used to search world to expand during next expansion 
-// of the MiniFrame 'that'
+// Get the nb of world To expande of the MiniFrame 'that'
 #if BUILDMODE != 0
 inline
 #endif
-float MFGetTimeSearchWorld(const MiniFrame* const that) {
+int MFGetNbWorldsToExpand(const MiniFrame* const that) {
 #if BUILDMODE == 0
   if (that == NULL) {
     MiniFrameErr->_type = PBErrTypeNullPointer;
@@ -45,39 +44,7 @@ float MFGetTimeSearchWorld(const MiniFrame* const that) {
     PBErrCatch(MiniFrameErr);
   }
 #endif
-  return that->_timeSearchWorld;
-}
-
-// Get the nb of world expanded during the last expansion 
-// of the MiniFrame 'that'
-#if BUILDMODE != 0
-inline
-#endif
-int MFGetNbWorldExpanded(const MiniFrame* const that) {
-#if BUILDMODE == 0
-  if (that == NULL) {
-    MiniFrameErr->_type = PBErrTypeNullPointer;
-    sprintf(MiniFrameErr->_msg, "'that' is null");
-    PBErrCatch(MiniFrameErr);
-  }
-#endif
-  return that->_nbWorldExpanded;
-}
-
-// Get the nb of world unexpanded during the last expansion 
-// of the MiniFrame 'that'
-#if BUILDMODE != 0
-inline
-#endif
-int MFGetNbWorldUnexpanded(const MiniFrame* const that) {
-#if BUILDMODE == 0
-  if (that == NULL) {
-    MiniFrameErr->_type = PBErrTypeNullPointer;
-    sprintf(MiniFrameErr->_msg, "'that' is null");
-    PBErrCatch(MiniFrameErr);
-  }
-#endif
-  return that->_nbWorldUnexpanded;
+  return GSetNbElem(MFWorldsToExpand(that));
 }
 
 // Get the time used at end of expansion of the MiniFrame 'that'
@@ -173,6 +140,36 @@ const GSet* MFWorlds(const MiniFrame* const that) {
   return &(that->_worlds);
 }
 
+// Get the GSet of worlds to expand of the MiniFrame 'that'
+#if BUILDMODE != 0
+inline
+#endif
+const GSet* MFWorldsToExpand(const MiniFrame* const that) {
+#if BUILDMODE == 0
+  if (that == NULL) {
+    MiniFrameErr->_type = PBErrTypeNullPointer;
+    sprintf(MiniFrameErr->_msg, "'that' is null");
+    PBErrCatch(MiniFrameErr);
+  }
+#endif
+  return &(that->_worldsToExpand);
+}
+
+// Get the GSet of worlds to free of the MiniFrame 'that'
+#if BUILDMODE != 0
+inline
+#endif
+const GSet* MFWorldsToFree(const MiniFrame* const that) {
+#if BUILDMODE == 0
+  if (that == NULL) {
+    MiniFrameErr->_type = PBErrTypeNullPointer;
+    sprintf(MiniFrameErr->_msg, "'that' is null");
+    PBErrCatch(MiniFrameErr);
+  }
+#endif
+  return &(that->_worldsToFree);
+}
+
 // Add the MFWorld 'world' to the computed MFWorlds of the 
 // MiniFrame 'that', ordered by the world's value from the pov of 
 // actor 'iActor'
@@ -201,6 +198,55 @@ void MFAddWorld(MiniFrame* const that, \
 #endif
   GSetAddSort(&(that->_worlds), world, 
     MFWorldGetForecastValue(world, iActor));  
+}
+
+// Add the MFWorld 'world' to the world to be expanded of the 
+// MiniFrame 'that'
+#if BUILDMODE != 0
+inline
+#endif
+void MFAddWorldToExpand(MiniFrame* const that, \
+  const MFWorld* const world) {
+#if BUILDMODE == 0
+  if (that == NULL) {
+    MiniFrameErr->_type = PBErrTypeNullPointer;
+    sprintf(MiniFrameErr->_msg, "'that' is null");
+    PBErrCatch(MiniFrameErr);
+  }
+  if (world == NULL) {
+    MiniFrameErr->_type = PBErrTypeNullPointer;
+    sprintf(MiniFrameErr->_msg, "'world' is null");
+    PBErrCatch(MiniFrameErr);
+  }
+#endif
+  if (MFGetExpansionType(that) == MFExpansionTypeWidth)
+    GSetPush(&(that->_worldsToExpand), world);  
+  else
+    GSetAddSort(&(that->_worldsToExpand), world, 
+      MFWorldGetForecastValue(world, 
+      MFModelStatusGetSente(MFWorldStatus(world))));
+}
+
+// Add the MFWorld 'world' to the world to be freeed of the 
+// MiniFrame 'that'
+#if BUILDMODE != 0
+inline
+#endif
+void MFAddWorldToFree(MiniFrame* const that, \
+  const MFWorld* const world) {
+#if BUILDMODE == 0
+  if (that == NULL) {
+    MiniFrameErr->_type = PBErrTypeNullPointer;
+    sprintf(MiniFrameErr->_msg, "'that' is null");
+    PBErrCatch(MiniFrameErr);
+  }
+  if (world == NULL) {
+    MiniFrameErr->_type = PBErrTypeNullPointer;
+    sprintf(MiniFrameErr->_msg, "'world' is null");
+    PBErrCatch(MiniFrameErr);
+  }
+#endif
+  GSetPush(&(that->_worldsToFree), world);  
 }
 
 // Return the MFModelStatus of the MFWorld 'that'
@@ -413,12 +459,11 @@ int MFGetNbComputedWorld(const MiniFrame* const that) {
   return GSetNbElem(&(that->_worlds));
 }
 
-// Get the nb of removed world during the last call to SetCurWorld 
-// of the MiniFrame 'that'
+// Get the nb of worlds to remove of the MiniFrame 'that'
 #if BUILDMODE != 0
 inline
 #endif
-int MFGetNbWorldRemoved(const MiniFrame* const that) {
+int MFGetNbWorldsToFree(const MiniFrame* const that) {
 #if BUILDMODE == 0
   if (that == NULL) {
     MiniFrameErr->_type = PBErrTypeNullPointer;
@@ -426,7 +471,7 @@ int MFGetNbWorldRemoved(const MiniFrame* const that) {
     PBErrCatch(MiniFrameErr);
   }
 #endif
-  return that->_nbRemovedWorld;
+  return GSetNbElem(MFWorldsToFree(that));
 }
 
 

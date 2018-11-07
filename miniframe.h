@@ -73,19 +73,14 @@ typedef struct MiniFrame {
   // All the computed world instances, ordered by their value from the
   // pov of the preempting player at the previous step
   GSet _worlds;
+  // Set of world waiting to be expanded
+  GSet _worldsToExpand;
+  // Set of world waiting to be freed
+  GSet _worldsToFree;
   // Time limit for expansion, in millisecond
   float _maxTimeExpansion;
   // Time unused during expansion, in millisecond
   float _timeUnusedExpansion;
-  // Percent of the total available time available to search for worlds
-  // to expand in MFExpand(), in ]0.0, 1.0], init to 1.0
-  float _timeSearchWorld;
-  // Nb of worlds expanded during last call to MFExpand
-  int _nbWorldExpanded;
-  // Nb of worlds unexpanded during last call to MFExpand
-  int _nbWorldUnexpanded;
-  // Nb of removed world;
-  int _nbRemovedWorld;
   // Flag to activate the reuse of previously computed same world
   bool _reuseWorld;
   // Percentage (in [0.0, 1.0]) of world reused during the last 
@@ -145,11 +140,23 @@ inline
 #endif
 const GSet* MFWorlds(const MiniFrame* const that);
 
-// Return the number of computed worlds in the MiniFrame 'that'
+// Get the GSet of worlds to expand of the MiniFrame 'that'
 #if BUILDMODE != 0
 inline
 #endif
-int MFGetNbComputedWorld(const MiniFrame* const that);
+const GSet* MFWorldsToExpand(const MiniFrame* const that);
+
+// Get the GSet of worlds to free of the MiniFrame 'that'
+#if BUILDMODE != 0
+inline
+#endif
+const GSet* MFWorldsToFree(const MiniFrame* const that);
+
+// Get the nb of world To expande of the MiniFrame 'that'
+#if BUILDMODE != 0
+inline
+#endif
+int MFGetNbWorldsToExpand(const MiniFrame* const that);
 
 // Return true if the expansion algorithm looks in previously 
 // computed worlds for same world to reuse, else false
@@ -174,6 +181,22 @@ inline
 void MFAddWorld(MiniFrame* const that, \
   const MFWorld* const world, const int iActor);
 
+// Add the MFWorld 'world' to the world to be expanded of the 
+// MiniFrame 'that'
+#if BUILDMODE != 0
+inline
+#endif
+void MFAddWorldToExpand(MiniFrame* const that, \
+  const MFWorld* const world);
+  
+// Add the MFWorld 'world' to the world to be freeed of the 
+// MiniFrame 'that'
+#if BUILDMODE != 0
+inline
+#endif
+void MFAddWorldToFree(MiniFrame* const that, \
+  const MFWorld* const world);
+  
 // Get the time limit for expansion of the MiniFrame 'that'
 #if BUILDMODE != 0
 inline
@@ -186,13 +209,6 @@ inline
 #endif
 float MFGetTimeUnusedExpansion(const MiniFrame* const that);
 
-// Get the time used to search world to expand during next expansion 
-// of the MiniFrame 'that'
-#if BUILDMODE != 0
-inline
-#endif
-float MFGetTimeSearchWorld(const MiniFrame* const that);
-
 // Get the nb of world expanded during the last expansion 
 // of the MiniFrame 'that'
 #if BUILDMODE != 0
@@ -200,19 +216,11 @@ inline
 #endif
 int MFGetNbWorldExpanded(const MiniFrame* const that);
 
-// Get the nb of world unexpanded during the last expansion 
-// of the MiniFrame 'that'
+// Get the nb of worlds to remove of the MiniFrame 'that'
 #if BUILDMODE != 0
 inline
 #endif
-int MFGetNbWorldUnexpanded(const MiniFrame* const that);
-
-// Get the nb of removed world during the last call to SetCurWorld 
-// of the MiniFrame 'that'
-#if BUILDMODE != 0
-inline
-#endif
-int MFGetNbWorldRemoved(const MiniFrame* const that);
+int MFGetNbWorldsToFree(const MiniFrame* const that);
 
 // Get the time used at end of expansion of the MiniFrame 'that'
 #if BUILDMODE != 0

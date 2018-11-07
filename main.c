@@ -250,12 +250,11 @@ void UnitTestMiniFrameCreateFree() {
     ISEQUALF(mf->_maxTimeExpansion, MF_DEFAULTTIMEEXPANSION) == false ||
     MFModelStatusIsSame(&initStatus, &(MFCurWorld(mf)->_status)) == false ||
     MFCurWorld(mf) != GSetGet(MFWorlds(mf), 0) ||
-    GSetNbElem(MFWorlds(mf)) != 1 ||
+    GSetNbElem(MFWorlds(mf)) != 0 ||
+    GSetNbElem(MFWorldsToExpand(mf)) != 1 ||
+    GSetNbElem(MFWorldsToFree(mf)) != 0 ||
     ISEQUALF(mf->_timeUnusedExpansion, 0.0) == false ||
     ISEQUALF(mf->_percWorldReused, 0.0) == false ||
-    mf->_nbWorldExpanded != 0 ||
-    mf->_nbWorldUnexpanded != 0 ||
-    mf->_nbRemovedWorld != 0 ||
     mf->_timeEndExpansion <= 0.0 ||
     mf->_maxDepthExp != -1 ||
     mf->_expansionType != MFExpansionTypeValue ||
@@ -283,11 +282,6 @@ void UnitTestMiniFrameGetSet() {
     mf->_maxTimeExpansion) == false) {
     MiniFrameErr->_type = PBErrTypeUnitTestFailed;
     sprintf(MiniFrameErr->_msg, "MFGetMaxTimeExpansion failed");
-    PBErrCatch(MiniFrameErr);
-  }
-  if (MFGetNbComputedWorld(mf) != 1) {
-    MiniFrameErr->_type = PBErrTypeUnitTestFailed;
-    sprintf(MiniFrameErr->_msg, "MFGetNbComputedWorld failed");
     PBErrCatch(MiniFrameErr);
   }
   float t = MF_DEFAULTTIMEEXPANSION + 1.0;
@@ -339,25 +333,6 @@ void UnitTestMiniFrameGetSet() {
       (MFModelStatus*)GSetGet(MFWorlds(mf), 1)) == false) {
     MiniFrameErr->_type = PBErrTypeUnitTestFailed;
     sprintf(MiniFrameErr->_msg, "MFAddWorld failed");
-    PBErrCatch(MiniFrameErr);
-  }
-  mf->_nbWorldExpanded = 1;
-  if (MFGetNbWorldExpanded(mf) != mf->_nbWorldExpanded) {
-    MiniFrameErr->_type = PBErrTypeUnitTestFailed;
-    sprintf(MiniFrameErr->_msg, "MFGetNbWorldExpanded failed");
-    PBErrCatch(MiniFrameErr);
-  }
-  mf->_nbWorldUnexpanded = 1;
-  if (MFGetNbWorldUnexpanded(mf) != mf->_nbWorldUnexpanded) {
-    MiniFrameErr->_type = PBErrTypeUnitTestFailed;
-    sprintf(MiniFrameErr->_msg, "MFGetNbWorldUnexpanded failed");
-    PBErrCatch(MiniFrameErr);
-  }
-  mf->_timeSearchWorld = 2.0;
-  if (ISEQUALF(MFGetTimeSearchWorld(mf), 
-    mf->_timeSearchWorld) == false) {
-    MiniFrameErr->_type = PBErrTypeUnitTestFailed;
-    sprintf(MiniFrameErr->_msg, "MFGetTimeSearchWorld failed");
     PBErrCatch(MiniFrameErr);
   }
   mf->_timeUnusedExpansion = 3.0;
@@ -447,10 +422,8 @@ void UnitTestMiniFrameExpandSetCurWorld() {
   MFSetWorldReusable(mf, true);
   MFExpand(mf);
   printf("Time unused by MFExpand: %f\n", MFGetTimeUnusedExpansion(mf));
-  printf("Time search world to expand: %f\n", MFGetTimeSearchWorld(mf));
-  printf("Nb world expanded: %d\n", MFGetNbWorldExpanded(mf));
-  printf("Nb world unexpanded: %d\n", MFGetNbWorldUnexpanded(mf));
-  printf("Nb world removed: %d\n", MFGetNbWorldRemoved(mf));
+  printf("Nb world to expand: %d\n", MFGetNbWorldsToExpand(mf));
+  printf("Nb world to free: %d\n", MFGetNbWorldsToFree(mf));
   printf("Perc world reused: %f\n", MFGetPercWordReused(mf));
   printf("Computed worlds:\n");
   GSetIterForward iter = GSetIterForwardCreateStatic(MFWorlds(mf));
@@ -459,11 +432,9 @@ void UnitTestMiniFrameExpandSetCurWorld() {
     MFWorldTransPrintln(world, stdout);
   } while (GSetIterStep(&iter));
   if (mf->_timeUnusedExpansion < 0.0 ||
-    MFGetNbWorldExpanded(mf) != 15 ||
-    MFGetNbWorldUnexpanded(mf) != 0 ||
-    MFGetNbWorldRemoved(mf) != 0 ||
-    ISEQUALF(MFGetPercWordReused(mf), 0.666667) == false ||
-    ISEQUALF(MFGetTimeSearchWorld(mf), 100.0) == false) {
+    MFGetNbWorldsToExpand(mf) != 15 ||
+    MFGetNbWorldsToFree(mf) != 0 ||
+    ISEQUALF(MFGetPercWordReused(mf), 0.666667) == false) {
     MiniFrameErr->_type = PBErrTypeUnitTestFailed;
     sprintf(MiniFrameErr->_msg, "MFExpand failed");
     PBErrCatch(MiniFrameErr);
@@ -489,7 +460,7 @@ void UnitTestMiniFrameExpandSetCurWorld() {
   MFModelStatus nextWorld = {._pos = -1, ._tgt = 2};
   MFSetCurWorld(mf, &nextWorld);
   if (MFCurWorld(mf) != GSetGet(MFWorlds(mf), 2) ||
-    MFGetNbComputedWorld(mf) != 6) {
+    MFGetNbWorldsToExpand(mf) != 6) {
     MiniFrameErr->_type = PBErrTypeUnitTestFailed;
     sprintf(MiniFrameErr->_msg, "MFSetCurWorld failed");
     PBErrCatch(MiniFrameErr);
