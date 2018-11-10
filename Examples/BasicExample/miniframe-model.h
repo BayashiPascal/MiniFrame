@@ -121,7 +121,7 @@ void MFModelTransitionPrint(const MFModelTransition* const that,
 // Having too many world instances in memory also slow down the 
 // exploration of worlds during expansion
 bool MFModelStatusIsDisposable(const MFModelStatus* const that, 
-  const MFModelStatus* const curStatus, const int nbStatus);
+  const MFModelStatus* const curStatus);
 
 // Return true if the MFModelStatus 'that' is the end of the 
 // game/simulation, else false

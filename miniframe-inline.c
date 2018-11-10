@@ -176,8 +176,7 @@ const GSet* MFWorldsToFree(const MiniFrame* const that) {
 #if BUILDMODE != 0
 inline
 #endif
-void MFAddWorld(MiniFrame* const that, \
-  const MFWorld* const world, const int iActor) {
+void MFAddWorld(MiniFrame* const that, const MFWorld* const world) {
 #if BUILDMODE == 0
   if (that == NULL) {
     MiniFrameErr->_type = PBErrTypeNullPointer;
@@ -189,15 +188,8 @@ void MFAddWorld(MiniFrame* const that, \
     sprintf(MiniFrameErr->_msg, "'world' is null");
     PBErrCatch(MiniFrameErr);
   }
-  if (iActor < -1 || iActor >= MF_NBMAXACTOR) {
-    MiniFrameErr->_type = PBErrTypeInvalidArg;
-    sprintf(MiniFrameErr->_msg, "'iActor' is invalid (-1<=%d<%d)",
-      iActor, MF_NBMAXACTOR);
-    PBErrCatch(MiniFrameErr);
-  }
 #endif
-  GSetAddSort(&(that->_worlds), world, 
-    MFWorldGetForecastValue(world, iActor));  
+  GSetAppend(&(that->_worlds), world);  
 }
 
 // Add the MFWorld 'world' to the world to be expanded of the 
@@ -225,28 +217,6 @@ void MFAddWorldToExpand(MiniFrame* const that, \
     GSetAddSort(&(that->_worldsToExpand), world, 
       MFWorldGetForecastValue(world, 
       MFModelStatusGetSente(MFWorldStatus(world))));
-}
-
-// Add the MFWorld 'world' to the world to be freeed of the 
-// MiniFrame 'that'
-#if BUILDMODE != 0
-inline
-#endif
-void MFAddWorldToFree(MiniFrame* const that, \
-  const MFWorld* const world) {
-#if BUILDMODE == 0
-  if (that == NULL) {
-    MiniFrameErr->_type = PBErrTypeNullPointer;
-    sprintf(MiniFrameErr->_msg, "'that' is null");
-    PBErrCatch(MiniFrameErr);
-  }
-  if (world == NULL) {
-    MiniFrameErr->_type = PBErrTypeNullPointer;
-    sprintf(MiniFrameErr->_msg, "'world' is null");
-    PBErrCatch(MiniFrameErr);
-  }
-#endif
-  GSetPush(&(that->_worldsToFree), world);  
 }
 
 // Return the MFModelStatus of the MFWorld 'that'
@@ -448,7 +418,7 @@ void MFTransitionSetValue(MFTransition* const that, const int iActor,
 #if BUILDMODE != 0
 inline
 #endif
-int MFGetNbComputedWorld(const MiniFrame* const that) {
+int MFGetNbComputedWorlds(const MiniFrame* const that) {
 #if BUILDMODE == 0
   if (that == NULL) {
     MiniFrameErr->_type = PBErrTypeNullPointer;

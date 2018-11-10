@@ -251,7 +251,7 @@ void MFModelTransitionPrint(const MFModelTransition* const that,
 // Having too many world instances in memory also slow down the 
 // exploration of worlds during expansion
 bool MFModelStatusIsDisposable(const MFModelStatus* const that, 
-  const MFModelStatus* const curStatus, const int nbStatus) {
+  const MFModelStatus* const curStatus) {
 #if BUILDMODE == 0
   if (that == NULL) {
     MiniFrameErr->_type = PBErrTypeNullPointer;
@@ -264,14 +264,10 @@ bool MFModelStatusIsDisposable(const MFModelStatus* const that,
     PBErrCatch(MiniFrameErr);
   }
 #endif
-  if (nbStatus > 0) {
-    if (abs(that->_pos - curStatus->_pos) > 2)
-      return true;
-    else
-      return false;
-  } else {
+  if (abs(that->_pos - curStatus->_pos) > 2)
+    return true;
+  else
     return false;
-  }
 }
 
 // Return true if the MFModelStatus 'that' is the end of the 

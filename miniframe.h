@@ -179,7 +179,7 @@ void MFSetWorldReusable(MiniFrame* const that, const bool reuse);
 inline
 #endif
 void MFAddWorld(MiniFrame* const that, \
-  const MFWorld* const world, const int iActor);
+  const MFWorld* const world);
 
 // Add the MFWorld 'world' to the world to be expanded of the 
 // MiniFrame 'that'
@@ -191,11 +191,7 @@ void MFAddWorldToExpand(MiniFrame* const that, \
   
 // Add the MFWorld 'world' to the world to be freeed of the 
 // MiniFrame 'that'
-#if BUILDMODE != 0
-inline
-#endif
-void MFAddWorldToFree(MiniFrame* const that, \
-  const MFWorld* const world);
+void MFAddWorldToFree(MiniFrame* const that, MFWorld* const world);
   
 // Get the time limit for expansion of the MiniFrame 'that'
 #if BUILDMODE != 0
@@ -209,12 +205,11 @@ inline
 #endif
 float MFGetTimeUnusedExpansion(const MiniFrame* const that);
 
-// Get the nb of world expanded during the last expansion 
-// of the MiniFrame 'that'
+// Get the nb of computed worlds of the MiniFrame 'that'
 #if BUILDMODE != 0
 inline
 #endif
-int MFGetNbWorldExpanded(const MiniFrame* const that);
+int MFGetNbComputedWorlds(const MiniFrame* const that);
 
 // Get the nb of worlds to remove of the MiniFrame 'that'
 #if BUILDMODE != 0
@@ -456,6 +451,10 @@ void MFSetPruningDeltaVal(MiniFrame* const that, const float val);
 inline
 #endif
 float MFGetPruningDeltaVal(const MiniFrame* const that);
+
+// Free the memory used by the disposable worlds in the computed worlds
+// of the MinFrame 'that'
+void MFFreeDisposableWorld(MiniFrame* const that);
 
 // ================ Inliner ====================
 
