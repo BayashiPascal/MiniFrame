@@ -2,7 +2,7 @@
 # 0: development (max safety, no optimisation)
 # 1: release (min safety, optimisation)
 # 2: fast and furious (no safety, optimisation)
-BUILD_MODE?=0
+BUILD_MODE?=1
 
 all: main
 	
@@ -40,3 +40,5 @@ createLinkToModelHeader:
 miniframe-model.o: miniframe-model.h miniframe-model.c Makefile
 	$(COMPILER) $(BUILD_ARG) $(MODEL_INC_DIR) -c miniframe-model.c
 
+automail:
+	while true; do tail -n 100 ~/GitHub/MiniFrame/Examples/Oware/res.txt | mail -s "oware"  pascalbayashi@docomo.ne.jp; sleep 3600; done

@@ -77,6 +77,8 @@ typedef struct MiniFrame {
   GSet _worldsToExpand;
   // Set of world waiting to be freed
   GSet _worldsToFree;
+  // Set of worlds on hold during expansion
+  GSet _worldsOnHold;
   // Time limit for expansion, in millisecond
   float _maxTimeExpansion;
   // Time unused during expansion, in millisecond
@@ -146,6 +148,12 @@ inline
 #endif
 const GSet* MFWorldsToExpand(const MiniFrame* const that);
 
+// Get the GSet of worlds on hold of the MiniFrame 'that'
+#if BUILDMODE != 0
+inline
+#endif
+const GSet* MFWorldsOnHold(const MiniFrame* const that);
+
 // Get the GSet of worlds to free of the MiniFrame 'that'
 #if BUILDMODE != 0
 inline
@@ -165,7 +173,7 @@ inline
 #endif
 bool MFIsWorldReusable(const MiniFrame* const that);
 
-// Set the falg controlling if the expansion algorithm looks in 
+// Set the flag controling if the expansion algorithm looks in 
 // previously computed worlds for same world to reuse to 'reuse'
 #if BUILDMODE != 0
 inline
@@ -193,6 +201,14 @@ void MFAddWorldToExpand(MiniFrame* const that, \
 // MiniFrame 'that'
 void MFAddWorldToFree(MiniFrame* const that, MFWorld* const world);
   
+// Add the MFWorld 'world' to the worlds on hold of the 
+// MiniFrame 'that'
+#if BUILDMODE != 0
+inline
+#endif
+void MFAddWorldToOnHold(MiniFrame* const that, \
+  const MFWorld* const world);
+  
 // Get the time limit for expansion of the MiniFrame 'that'
 #if BUILDMODE != 0
 inline
@@ -216,6 +232,12 @@ int MFGetNbComputedWorlds(const MiniFrame* const that);
 inline
 #endif
 int MFGetNbWorldsToFree(const MiniFrame* const that);
+
+// Get the nb of worlds on hold of the MiniFrame 'that'
+#if BUILDMODE != 0
+inline
+#endif
+int MFGetNbWorldsOnHold(const MiniFrame* const that);
 
 // Get the time used at end of expansion of the MiniFrame 'that'
 #if BUILDMODE != 0
@@ -395,6 +417,8 @@ int MFGetMaxDepthExp(const MiniFrame* const that);
 
 // Set the max depth during expansion for the MiniFrame 'that' to 'depth'
 // If depth is less than -1 it is converted to -1
+// If the expansion type is not by width the max expansion depth is 
+// ignored during expansion
 #if BUILDMODE != 0
 inline
 #endif

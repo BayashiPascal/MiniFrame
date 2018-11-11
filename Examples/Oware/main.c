@@ -51,6 +51,14 @@ void RunDemo(float expansionTime, bool useNN) {
     MFSetStartExpandClock(mf, clock());
     // Correct the current world in the MiniFrame
     MFSetCurWorld(mf, &curWorld);
+    // Display info
+    printf("computed: %d, ", MFGetNbComputedWorlds(mf));
+    printf("to expand: %d, ", MFGetNbWorldsToExpand(mf));
+    printf("to free: %d, ", MFGetNbWorldsToFree(mf));
+    printf("reused: %f, ", MFGetPercWordReused(mf));
+    printf("unused: %fms\n", MFGetTimeUnusedExpansion(mf));
+    // Free the disposable worlds
+    MFFreeDisposableWorld(mf);
     // Expand
     MFExpand(mf);
     //MFWorldTransPrintln(MFCurWorld(mf), stdout);
@@ -58,13 +66,6 @@ void RunDemo(float expansionTime, bool useNN) {
     MFWorldPrintBestStoryln(MFCurWorld(mf), 
       curWorld._curPlayer, stdout);
     printf("--- end of best story ---\n");*/
-    // Display info about exansion
-    printf("exp: %d ", MFGetNbWorldExpanded(mf));
-    printf("unexp: %d ", MFGetNbWorldUnexpanded(mf));
-    printf("comp: %d ", MFGetNbComputedWorld(mf));
-    printf("removed: %d ", MFGetNbWorldRemoved(mf));
-    printf("reused: %f ", MFGetPercWordReused(mf));
-    printf("unused: %fms\n", MFGetTimeUnusedExpansion(mf));
     if (MFGetTimeUnusedExpansion(mf) < 0.0) {
       flagEnd = true;
       curWorld._score[curWorld._curPlayer] = -1;
@@ -132,6 +133,8 @@ void TrainOneGame(float expansionTime, GenAlgAdn** adns, GSet* result) {
     MFSetStartExpandClock(mf, clock());
     // Correct the current world in the MiniFrame
     MFSetCurWorld(mf, &curWorld);
+    // Free the disposable worlds
+    MFFreeDisposableWorld(mf);
     // Expand
     MFExpand(mf);
     if (MFGetTimeUnusedExpansion(mf) < 0.0) {
@@ -199,26 +202,53 @@ void Train(int nbEpoch, int sizePool, int nbElite, int nbGameEpoch,
   }
   // Declare a GSet to memorize the result
   GSet result = GSetCreateStatic();
+  // Create the ELORank
+  ELORank* eloRank = ELORankCreate();
+  for (int iAdn = 0; iAdn < sizePool; ++iAdn)
+    ELORankAdd(eloRank, GSetGet(GAAdns(genAlg), iAdn));
+  ELORankAdd(eloRank, (GenAlgAdn*)GABestAdn(genAlg));
+  ELORankAdd(eloRank, (void*)1);
   // Declare a variable to memorize the current epoch
   int iEpoch = 0;
+  
+  int iAdnGlob = 0;
+  
   // Loop on epochs
   while (iEpoch < nbEpoch) {
-    // Create the ELORank
-    ELORank* eloRank = ELORankCreate();
-    for (int iAdn = 0; iAdn < sizePool; ++iAdn)
-      ELORankAdd(eloRank, GSetGet(GAAdns(genAlg), iAdn));
-    ELORankAdd(eloRank, (GenAlgAdn*)GABestAdn(genAlg));
-    ELORankAdd(eloRank, (void*)1);
     // Declare a variable to memorize the current game
     int iGame = 0;
     // Loop on games
     while (iGame < nbGameEpoch) {
-      fprintf(stderr, "Epoch %05d/%05d Game %03d/%03d   \r", 
-        iEpoch + 1, nbEpoch, iGame + 1, nbGameEpoch);
+      float eloRef = ELORankGetELO(eloRank, (void*)1);
+      float eloSoftRef = ELORankGetSoftELO(eloRank, (void*)1);
+      float eloBest = 0.0;
+      float eloSoftBest = 0.0;
+      long int idBest = 0;
+      if (ELORankGetRanked(eloRank, 0)->_data == (void*)1) {
+        eloBest = ELORankGetELO(eloRank, 
+          ELORankGetRanked(eloRank, 1)->_data);
+        eloSoftBest = ELORankGetSoftELO(eloRank, 
+          ELORankGetRanked(eloRank, 1)->_data);
+        idBest = GAAdnGetId(ELORankGetRanked(eloRank, 1)->_data);
+      } else {
+        eloBest = ELORankGetELO(eloRank, 
+          ELORankGetRanked(eloRank, 0)->_data);
+        eloSoftBest = ELORankGetSoftELO(eloRank, 
+          ELORankGetRanked(eloRank, 0)->_data);
+        idBest = GAAdnGetId(ELORankGetRanked(eloRank, 0)->_data);
+      }
+      fprintf(stderr, "Epoch %05d/%05d Game %03d/%03d (ref %f[%f], bestelo(%ld) %f[%f])   \r", 
+        iEpoch + 1, nbEpoch, iGame + 1, nbGameEpoch, eloRef, eloSoftRef, idBest, eloBest, eloSoftBest);
       fflush(stderr);
-      // Select randomly two adns
+      // Select randomly one adn (including the best adn in GenAlg to play
+      // against the reference, take care of who has the sente
       GenAlgAdn* adns[NBPLAYER] = {NULL};
       int iAdn = (int)round(rnd() * (float)(sizePool) - 1.0);
+      
+      iAdn = iAdnGlob;
+      ++iAdnGlob;
+      if (iAdnGlob == sizePool) iAdnGlob = -1;
+      
       if (rnd() < 0.5) {
         adns[0] = (void*)1;
         if (iAdn == -1)
@@ -232,6 +262,25 @@ void Train(int nbEpoch, int sizePool, int nbElite, int nbGameEpoch,
         else 
           adns[0] = GSetGet(GAAdns(genAlg), iAdn);
       }
+      // Select randomly two adns
+      /*GenAlgAdn* adns[NBPLAYER] = {NULL};
+      GSet setPlayers = GSetCreateStatic();
+      GSetAddSort(&setPlayers, (void*)1, rnd());
+      for (int iAdn = sizePool; iAdn--;)
+        GSetAddSort(&setPlayers, GSetGet(GAAdns(genAlg), iAdn), rnd());
+      while (GSetNbElem(&setPlayers) > 2)
+        (void)GSetDrop(&setPlayers);
+      adns[0] = GSetGet(&setPlayers, 0);
+      adns[1] = GSetGet(&setPlayers, 1);
+      GSetFlush(&setPlayers);*/
+      // Force the ref to play only with the elite
+      /*if (adns[0] == (void*)1) {
+        int iElite = sizePool - (int)round(rnd() * (nbElite - 2)) - 1;
+        adns[1] = GSetGet(GAAdns(genAlg), iElite);
+      } else if (adns[1] == (void*)1) {
+        int iElite = sizePool - (int)round(rnd() * (nbElite - 2)) - 1;
+        adns[0] = GSetGet(GAAdns(genAlg), iElite);
+      }*/
       // Play the game
       TrainOneGame(expansionTime, adns, &result);
       // Update the ELORank with the result
@@ -244,23 +293,26 @@ void Train(int nbEpoch, int sizePool, int nbElite, int nbGameEpoch,
     // Update the values of each adn in the GenAlg with their ELORank
     for (int iAdn = 0; iAdn < sizePool; ++iAdn) {
       GenAlgAdn* adn = GSetGet(GAAdns(genAlg), iAdn);
-      float elo = ELORankGetELO(eloRank, adn);
+      float elo = ELORankGetSoftELO(eloRank, adn);
       GASetAdnValue(genAlg, adn, elo);
     }
     // Update the value of the best adn too
     GenAlgAdn* bestAdn = (GenAlgAdn*)GABestAdn(genAlg);
-    bestAdn->_val = ELORankGetELO(eloRank, bestAdn);
+    bestAdn->_val = ELORankGetSoftELO(eloRank, bestAdn);
     // Step the GenAlg
     GAStep(genAlg);
     // Display the elo of the best and the reference
-    float eloRef = ELORankGetELO(eloRank, (void*)1);
-    float eloBest = GAAdnGetVal(bestAdn);
-    printf("best: %f(age %ld) ref: %f(rank %d)\n", eloBest, 
-      GAAdnGetAge(bestAdn), eloRef, ELORankGetRank(eloRank, (void*)1));
+    float eloSoftBest = GAAdnGetVal(bestAdn);
+    float eloSoftRef = ELORankGetSoftELO(eloRank, (void*)1);
+    printf("best(%ld): [%f](age %ld) ref: [%f](rank %d)\n", 
+      GAAdnGetId(bestAdn), eloSoftBest, 
+      GAAdnGetAge(bestAdn), eloSoftRef, ELORankGetRank(eloRank, 
+      (void*)1));
     fflush(stdout);
     // Save the result
-    fprintf(streamRes, "%ld %f %f %d\n", GAGetCurEpoch(genAlg), eloBest,
-      eloRef, ELORankGetRank(eloRank, (void*)1));
+    fprintf(streamRes, "%ld %f %f %d\n", 
+      GAGetCurEpoch(genAlg), eloSoftBest,
+      eloSoftRef, ELORankGetRank(eloRank, (void*)1));
     fflush(streamRes);
     // Save the best NeuraNet to ./bestnn.txt
     NNSetBases(neuraNet, GAAdnAdnF(bestAdn));
@@ -286,11 +338,18 @@ void Train(int nbEpoch, int sizePool, int nbElite, int nbGameEpoch,
       exit(1);
     }
     fclose(stream);
+    // Reset the ELO of the non elite adn
+    for (int iAdn = 0; iAdn < sizePool; ++iAdn) {
+      GenAlgAdn* adn = GSetGet(GAAdns(genAlg), iAdn);
+      int rank = ELORankGetRank(eloRank, adn);
+      if (rank >= nbElite)
+        ELORankResetELO(eloRank, adn);
+    }
     // Increment the current epoch
     ++iEpoch;
-    // Free memory
-    ELORankFree(&eloRank);
   }
+  // Free memory
+  ELORankFree(&eloRank);
   // Free memory
   fclose(streamRes);
   GSetFlush(&result);
@@ -313,8 +372,8 @@ int main(int argc, char** argv) {
   // Declare variables to memorize the size of pool, number of elites,
   // number of game per epoch for training
   int nbElite = 5;
-  int sizePool = 20;
-  int nbGameEpoch = 200;
+  int sizePool = nbElite * 4;
+  int nbGameEpoch = sizePool * sizePool;
   // Process argument
   for (int iArg = 0; iArg < argc; ++iArg) {
     if (strcmp(argv[iArg], "-help") == 0) {

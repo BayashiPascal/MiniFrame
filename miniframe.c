@@ -101,6 +101,7 @@ MiniFrame* MiniFrameCreate(const MFModelStatus* const initStatus) {
   that->_worlds = GSetCreateStatic();
   that->_worldsToExpand = GSetCreateStatic();
   that->_worldsToFree = GSetCreateStatic();
+  that->_worldsOnHold = GSetCreateStatic();
   MFAddWorld(that, MFCurWorld(that));
   that->_timeUnusedExpansion = 0.0;
   that->_reuseWorld = false;
@@ -189,18 +190,20 @@ void MiniFrameFree(MiniFrame** that) {
   // Check argument
   if (that == NULL || *that == NULL) return;
   // Free memory
+  (*that)->_curWorld = NULL;
   while(MFGetNbComputedWorlds(*that) > 0) {
     MFWorld* world = GSetPop(&((*that)->_worlds));
-    MFWorldFree(&world);
+    MFAddWorldToFree(*that, world);
   }
   while(MFGetNbWorldsToExpand(*that) > 0) {
     MFWorld* world = GSetPop(&((*that)->_worldsToExpand));
-    MFWorldFree(&world);
+    MFAddWorldToFree(*that, world);
   }
-  while(MFGetNbWorldsToFree(*that) > 0) {
-    MFWorld* world = GSetPop(&((*that)->_worldsToFree));
-    MFWorldFree(&world);
+  while(MFGetNbWorldsOnHold(*that) > 0) {
+    MFWorld* world = GSetPop(&((*that)->_worldsOnHold));
+    MFAddWorldToFree(*that, world);
   }
+  MFFreeDisposableWorld(*that);
   free(*that);
   *that = NULL;
 }
@@ -253,12 +256,21 @@ void MFExpand(MiniFrame* that) {
   // Declare a variable to memorize the number of worlds searched for 
   // reuse
   int nbWorldSearchForReuse = 0;
+  // If there are worlds on hold, put them back into the set of worlds 
+  // to expand
+  while (MFGetNbWorldsOnHold(that) > 0) {
+    MFWorld* world = GSetDrop((GSet*)MFWorldsOnHold(that));
+    MFAddWorldToExpand(that, world);
+  }
   // If the set of worlds to expand is empty
   if (GSetNbElem(MFWorldsToExpand(that)) == 0) {
     // Temporarily move the current world to the set of worlds to expand
     MFAddWorldToExpand(that, MFCurWorld(that));
     GSetRemoveFirst(&(that->_worlds), MFCurWorld(that));
   }
+  // Declare a variable to memorize the limit of expansion by depth
+  int limitDepthExpansion = MFCurWorld(that)->_depth + 
+    (MFGetMaxDepthExp(that) == -1 ? 1000 : MFGetMaxDepthExp(that));
   // Loop until we have time for one more step of expansion or there
   // is no world to expand
   // Take care of clock() wrapping around
@@ -270,13 +282,18 @@ void MFExpand(MiniFrame* that) {
     clock_t clockStartLoop = clock();
     // Drop the world to expand with highest value
     MFWorld* worldToExpand = GSetDrop((GSet*)MFWorldsToExpand(that));
-    // If this world is disposable
-    if (worldToExpand != MFCurWorld(that) && (
+    // If this world is above the limit by depth of expansion
+    if (worldToExpand->_depth > limitDepthExpansion) {
+      // Put it to the worlds on hold
+      MFAddWorldToOnHold(that, worldToExpand);
+    // Else, if this world is disposable
+    } else if (worldToExpand != MFCurWorld(that) && (
       GSetNbElem(MFWorldSources(worldToExpand)) == 0 || 
       MFModelStatusIsDisposable(MFWorldStatus(worldToExpand), 
       MFWorldStatus(MFCurWorld(that))))) {
       // Add it to the worlds to free
       MFAddWorldToFree(that, worldToExpand);
+    // Else, the world needs to be expanded
     } else {
       // Get the number of expandable transition
       int nbTransExpandable = MFWorldGetNbTransExpandable(worldToExpand);
@@ -310,6 +327,8 @@ void MFExpand(MiniFrame* that) {
           if (sameWorld == NULL) {
             // Create a MFWorld for the new status
             MFWorld* expandedWorld = MFWorldCreate(&status);
+            // Update the depth of the world
+            expandedWorld->_depth = worldToExpand->_depth + 1;
             // Add the world to the set of worlds to expand 
             MFAddWorldToExpand(that, expandedWorld);
             // Set the expanded world as the result of the transition
@@ -331,22 +350,22 @@ void MFExpand(MiniFrame* that) {
         MFAddWorld(that, worldToExpand);
       // Else, the world still needs to be expanded
       } else {
-        // Put it back to the worlds to expand
-        MFAddWorldToExpand(that, worldToExpand);
+        // Put it to the worlds on hold
+        MFAddWorldToOnHold(that, worldToExpand);
       }
       // Update the total time used from beginning of expansion 
       timeUsed = 
         ((double)(clock() - clockStart)) / MF_MILLISECTOCLOCKS;
-    }
-    // For each actor
-    for (int iActor = 
-      MFModelStatusGetNbActor(MFWorldStatus(worldToExpand)); 
-      iActor--;) {
-      // Update backward the forecast values for each transitions 
-      // leading to the expanded world according to its new transitions
-      GSet setWorld = GSetCreateStatic();
-      MFUpdateForecastValues(that, worldToExpand, 0, &setWorld, iActor);
-      GSetFlush(&setWorld);
+      // For each actor
+      for (int iActor = 
+        MFModelStatusGetNbActor(MFWorldStatus(worldToExpand)); 
+        iActor--;) {
+        // Update backward the forecast values for each transitions 
+        // leading to the expanded world according to its new transitions
+        GSet setWorld = GSetCreateStatic();
+        MFUpdateForecastValues(that, worldToExpand, 0, &setWorld, iActor);
+        GSetFlush(&setWorld);
+      }
     }
     // Declare a variable to memorize the time at the end of one
     // step of expansion
@@ -985,7 +1004,7 @@ bool MFTransitionUpdateValue(MFTransition* const that, const int iActor,
 #if MF_SIMULTANEOUS_PLAY
 
 #else
-  MFWorld* fromWorld = MFTransitionFromWorld(that);
+  MFWorld* fromWorld = (MFWorld*)MFTransitionFromWorld(that);
   int sente = MFModelStatusGetSente(MFWorldStatus(fromWorld));
   if (sente == -1 || sente == iActor) {
     if (that->_values[iActor] < val) {
@@ -1167,6 +1186,28 @@ void MFSetCurWorld(MiniFrame* const that,
   }
   // If we haven't found the searched status
   if (!flagFound) {
+    // If there are worlds on hold
+    if (MFGetNbWorldsOnHold(that) > 0) {
+      // Loop on worlds on hold
+      GSetIterForward iter = 
+        GSetIterForwardCreateStatic(MFWorldsOnHold(that));
+      do {
+        MFWorld* world = GSetIterGet(&iter);
+        // If this is the current world
+        if (MFModelStatusIsSame(MFWorldStatus(world), status)) {
+          // Ensure that the status is exactly the same by copying the 
+          // MFModelStatus struct, in case MFModelStatusIsSame refers only
+          // to a subset of properties of the MFModelStatus
+          memcpy(world, status, sizeof(MFModelStatus));
+          // Update the curWorld in MiniFrame
+          that->_curWorld = world;
+          flagFound = true;
+        }
+      } while (!flagFound && GSetIterStep(&iter));
+    }
+  }
+  // If we haven't found the searched status
+  if (!flagFound) {
     // Create a new MFWorld with the current status
     MFWorld* world = MFWorldCreate(status);
     // Add it to the computed worlds
@@ -1184,6 +1225,7 @@ void MFSetCurWorld(MiniFrame* const that,
     // Flag to manage removal of disposable worlds
     bool moved = false;
     do {
+      moved = false;
       MFWorld* world = GSetIterGet(&iter);
       if (GSetNbElem(MFWorldSources(world)) == 0 || 
         MFModelStatusIsDisposable(MFWorldStatus(world), 
@@ -1241,8 +1283,11 @@ void MFFreeDisposableWorld(MiniFrame* const that) {
   // Loop on free-able worlds
   while (MFGetNbWorldsToFree(that) > 0) {
     MFWorld* world = GSetPop((GSet*)MFWorldsToFree(that));
-    // Free memory
-    MFWorldFree(&world);
+    // If this is not the current world
+    if (world != MFCurWorld(that)) {
+      // Free memory
+      MFWorldFree(&world);
+    }
   }
 }
 

@@ -155,6 +155,21 @@ const GSet* MFWorldsToExpand(const MiniFrame* const that) {
   return &(that->_worldsToExpand);
 }
 
+// Get the GSet of worlds on hold of the MiniFrame 'that'
+#if BUILDMODE != 0
+inline
+#endif
+const GSet* MFWorldsOnHold(const MiniFrame* const that) {
+#if BUILDMODE == 0
+  if (that == NULL) {
+    MiniFrameErr->_type = PBErrTypeNullPointer;
+    sprintf(MiniFrameErr->_msg, "'that' is null");
+    PBErrCatch(MiniFrameErr);
+  }
+#endif
+  return &(that->_worldsOnHold);
+}
+
 // Get the GSet of worlds to free of the MiniFrame 'that'
 #if BUILDMODE != 0
 inline
@@ -217,6 +232,28 @@ void MFAddWorldToExpand(MiniFrame* const that, \
     GSetAddSort(&(that->_worldsToExpand), world, 
       MFWorldGetForecastValue(world, 
       MFModelStatusGetSente(MFWorldStatus(world))));
+}
+
+// Add the MFWorld 'world' to the worlds on hold of the 
+// MiniFrame 'that'
+#if BUILDMODE != 0
+inline
+#endif
+void MFAddWorldToOnHold(MiniFrame* const that, \
+  const MFWorld* const world) {
+#if BUILDMODE == 0
+  if (that == NULL) {
+    MiniFrameErr->_type = PBErrTypeNullPointer;
+    sprintf(MiniFrameErr->_msg, "'that' is null");
+    PBErrCatch(MiniFrameErr);
+  }
+  if (world == NULL) {
+    MiniFrameErr->_type = PBErrTypeNullPointer;
+    sprintf(MiniFrameErr->_msg, "'world' is null");
+    PBErrCatch(MiniFrameErr);
+  }
+#endif
+  GSetPush(&(that->_worldsOnHold), world);  
 }
 
 // Return the MFModelStatus of the MFWorld 'that'
@@ -328,7 +365,7 @@ bool MFIsWorldReusable(const MiniFrame* const that) {
   return that->_reuseWorld;
 }
 
-// Set the falg controlling if the expansion algorithm looks in 
+// Set the flag controling if the expansion algorithm looks in 
 // previously computed worlds for same world to reuse to 'reuse'
 #if BUILDMODE != 0
 inline
@@ -444,6 +481,21 @@ int MFGetNbWorldsToFree(const MiniFrame* const that) {
   return GSetNbElem(MFWorldsToFree(that));
 }
 
+// Get the nb of worlds on hold of the MiniFrame 'that'
+#if BUILDMODE != 0
+inline
+#endif
+int MFGetNbWorldsOnHold(const MiniFrame* const that) {
+#if BUILDMODE == 0
+  if (that == NULL) {
+    MiniFrameErr->_type = PBErrTypeNullPointer;
+    sprintf(MiniFrameErr->_msg, "'that' is null");
+    PBErrCatch(MiniFrameErr);
+  }
+#endif
+  return GSetNbElem(MFWorldsOnHold(that));
+}
+
 
 // Return the value of the MFWorld 'that' for the 
 // actor 'iActor'.
@@ -539,6 +591,8 @@ int MFGetMaxDepthExp(const MiniFrame* const that) {
 
 // Set the max depth during expansion for the MiniFrame 'that' to 'depth'
 // If depth is less than -1 it is converted to -1
+// If the expansion type is not by width the max expansion depth is 
+// ignored during expansion
 #if BUILDMODE != 0
 inline
 #endif

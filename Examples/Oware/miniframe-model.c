@@ -338,7 +338,7 @@ void MFModelTransitionPrint(const MFModelTransition* const that,
 // Having too many world instances in memory also slow down the 
 // exploration of worlds during expansion
 bool MFModelStatusIsDisposable(const MFModelStatus* const that, 
-  const MFModelStatus* const curStatus, const int nbStatus) {
+  const MFModelStatus* const curStatus) {
 #if BUILDMODE == 0
   if (that == NULL) {
     MiniFrameErr->_type = PBErrTypeNullPointer;
@@ -351,7 +351,6 @@ bool MFModelStatusIsDisposable(const MFModelStatus* const that,
     PBErrCatch(MiniFrameErr);
   }
 #endif
-  (void)nbStatus;
   int nbRemainStoneCurStatus = 0;
   for (int iHole = NBHOLE; iHole--;)
     nbRemainStoneCurStatus += curStatus->_nbStone[iHole];
