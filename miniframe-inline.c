@@ -47,21 +47,6 @@ int MFGetNbWorldsToExpand(const MiniFrame* const that) {
   return GSetNbElem(MFWorldsToExpand(that));
 }
 
-// Get the time used at end of expansion of the MiniFrame 'that'
-#if BUILDMODE != 0
-inline
-#endif
-float MFGetTimeEndExpansion(const MiniFrame* const that) {
-#if BUILDMODE == 0
-  if (that == NULL) {
-    MiniFrameErr->_type = PBErrTypeNullPointer;
-    sprintf(MiniFrameErr->_msg, "'that' is null");
-    PBErrCatch(MiniFrameErr);
-  }
-#endif
-  return that->_timeEndExpansion;
-}
-
 // Get the clock considered has start during expansion
 #if BUILDMODE != 0
 inline
@@ -186,8 +171,7 @@ const GSet* MFWorldsToFree(const MiniFrame* const that) {
 }
 
 // Add the MFWorld 'world' to the computed MFWorlds of the 
-// MiniFrame 'that', ordered by the world's value from the pov of 
-// actor 'iActor'
+// MiniFrame 'that'
 #if BUILDMODE != 0
 inline
 #endif

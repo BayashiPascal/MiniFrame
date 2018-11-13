@@ -255,7 +255,6 @@ void UnitTestMiniFrameCreateFree() {
     GSetNbElem(MFWorldsToFree(mf)) != 0 ||
     ISEQUALF(mf->_timeUnusedExpansion, 0.0) == false ||
     ISEQUALF(mf->_percWorldReused, 0.0) == false ||
-    mf->_timeEndExpansion <= 0.0 ||
     mf->_maxDepthExp != -1 ||
     mf->_expansionType != MFExpansionTypeValue ||
     mf->_nbTransMonteCarlo != MF_NBTRANSMONTECARLO ||
@@ -289,12 +288,6 @@ void UnitTestMiniFrameGetSet() {
   if (ISEQUALF(MFGetMaxTimeExpansion(mf), t) == false) {
     MiniFrameErr->_type = PBErrTypeUnitTestFailed;
     sprintf(MiniFrameErr->_msg, "MFSetMaxTimeExpansion failed");
-    PBErrCatch(MiniFrameErr);
-  }
-  if (ISEQUALF(MFGetTimeEndExpansion(mf),
-    mf->_timeEndExpansion) == false) {
-    MiniFrameErr->_type = PBErrTypeUnitTestFailed;
-    sprintf(MiniFrameErr->_msg, "MFGetTimeEndExpansion failed");
     PBErrCatch(MiniFrameErr);
   }
   if (MFCurWorld(mf) != mf->_curWorld) {

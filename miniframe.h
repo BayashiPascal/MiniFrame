@@ -88,8 +88,6 @@ typedef struct MiniFrame {
   // Percentage (in [0.0, 1.0]) of world reused during the last 
   // MFExpand()
   float _percWorldReused;
-  // Time used at end of expansion (per remaining world)
-  float _timeEndExpansion;
   // The clock considered has start during expansion
   clock_t _startExpandClock;
   // Maximum depth during expansion, if -1 there is no limit

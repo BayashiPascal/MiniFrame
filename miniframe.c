@@ -111,20 +111,6 @@ MiniFrame* MiniFrameCreate(const MFModelStatus* const initStatus) {
   that->_expansionType = MFExpansionTypeValue;
   that->_nbTransMonteCarlo = MF_NBTRANSMONTECARLO;
   that->_pruningDeltaVal = MF_PRUNINGDELTAVAL;
-  // Estimate the time used at end of expansion which is the time
-  // used to flush a gset
-  GSet set = GSetCreateStatic();
-  int nb = 100;
-  float timeFlush = 0.0;
-  do {
-    for (int i = nb; i--;)
-      GSetPush(&set, NULL);
-    clock_t timeStart = clock();
-    GSetFlush(&set);
-    clock_t timeEnd = clock();
-    timeFlush = ((double)(timeEnd - timeStart)) / MF_MILLISECTOCLOCKS;
-  } while (timeFlush < 0.0);
-  that->_timeEndExpansion = timeFlush / (float)nb;
   // Return the new MiniFrame
   return that;
 }
@@ -299,24 +285,22 @@ void MFExpand(MiniFrame* that) {
       int nbTransExpandable = MFWorldGetNbTransExpandable(worldToExpand);
       // Get the threshold for expannsion to activate montecarlo when 
       // there are too many transitions
-      float thresholdMonteCarlo = 
-        (float)MFGetNbTransMonteCarlo(that) / (float)nbTransExpandable;
+      float thresholdMonteCarlo = 2.0;
+      if (nbTransExpandable > 0)
+        thresholdMonteCarlo = 
+          (float)MFGetNbTransMonteCarlo(that) / (float)nbTransExpandable;
       // For each transitions from the expanded world and until we have
       // time available
       // Take care of clock() wrapping around
       for (int iTrans = 0; iTrans < MFWorldGetNbTrans(worldToExpand) &&
-        timeUsed >= 0.0 &&
-        timeUsed + maxTimeOneStep + 
-        MFGetTimeEndExpansion(that) * MFGetNbWorldsToExpand(that) < 
-        MFGetMaxTimeExpansion(that); 
+        timeUsed >= 0.0 && 
+        timeUsed + maxTimeOneStep < MFGetMaxTimeExpansion(that); 
         ++iTrans) {
         // If this transition has not been computed yet
         const MFTransition* const trans = 
           MFWorldTransition(worldToExpand, iTrans);
         if (MFTransitionIsExpandable(trans) && 
           (thresholdMonteCarlo >= 1.0 || rnd() < thresholdMonteCarlo)) {
-          // Decrement the number of expandable transitions for this world
-          --nbTransExpandable;
           // Expand through this transition
           MFModelStatus status = 
             MFWorldComputeTransition(worldToExpand, iTrans);
@@ -344,7 +328,7 @@ void MFExpand(MiniFrame* that) {
         }
       }
       // If all the expandable transitions have been expanded
-      if (nbTransExpandable == 0) {
+      if (MFWorldGetNbTransExpandable(worldToExpand) == 0) {
         // Move the expanded world from the worlds to expands to the 
         // computed worlds
         MFAddWorld(that, worldToExpand);
@@ -787,46 +771,16 @@ float MFWorldGetForecastValue(const MFWorld* const that,
     PBErrCatch(MiniFrameErr);
   }
 #endif
-  // Declare a variable to memorize the highest value among transitions
-  float valBestTrans = 0.0;
-  // Declare a variable to memorize the transition with highest value
-  const MFTransition* bestTrans = NULL;
-  // Loop on transitions
-  for (int iTrans = MFWorldGetNbTrans(that); iTrans--;) {
-    // Declare a variable to memorize the transition
-    const MFTransition* const trans = 
-      MFWorldTransition(that, iTrans);
-    // If this transitions has been expanded
-    if (!MFTransitionIsExpandable(trans)) {
-      // Get the value of the transition from the point of view of 
-      // the sente
-      float val = MFTransitionGetValue(trans, iActor);
-      // If it's not the first considered transition
-      if (bestTrans != NULL) {
-        // If the value is better
-        if (valBestTrans < val) {
-          valBestTrans = val;
-          bestTrans = trans;
-        }
-      // Else it's the first considered transition
-      } else {
-        // Init the best value with the value of this transition
-        valBestTrans = val;
-        // Init the best transition
-        bestTrans = trans;
-      }
-    }
-  }
-  // Return the value for this world
-  // If there are expanded transitions
+  // Get the best transition
+  const MFTransition* bestTrans = 
+    (const MFTransition*)MFWorldBestTransition(that, iActor);
+  // If there is a best transition
   if (bestTrans != NULL) {
-    // Return the value of the best transition from the point of view 
-    // of the requested actor
+    // Return the value of the best transition
     return MFTransitionGetValue(bestTrans, iActor);
-  // Else this world has no transitions
+  // Else, there was no transition from this world
   } else {
-    // Return the value of this world from the point of view of the 
-    // requested actor
+    // Return the value of this world
     return MFWorldGetValue(that, iActor);
   }
 }
@@ -873,29 +827,45 @@ const MFModelTransition* MFWorldBestTransition(
 #endif
   // Declare a variable to memorize the highest value among transitions
   float valBestTrans = 0.0;
-  // Declare a variable to memorize the best transition
+  // Declare a variable to memorize the transition with highest value
   const MFTransition* bestTrans = NULL;
+  // Get the sente
+  int sente = MFModelStatusGetSente(MFWorldStatus(that));
   // Loop on transitions
-  for (int iTrans = 0; iTrans < MFWorldGetNbTrans(that); ++iTrans) {
+  for (int iTrans = MFWorldGetNbTrans(that); iTrans--;) {
     // Declare a variable to memorize the transition
-    const MFTransition* const trans = MFWorldTransition(that, iTrans);
+    const MFTransition* const trans = 
+      MFWorldTransition(that, iTrans);
     // If this transitions has been expanded
-    if (MFTransitionIsExpanded(trans)) {
+    if (!MFTransitionIsExpandable(trans)) {
       // Get the value of the transition from the point of view of 
-      // the requested actor
-      float val = MFTransitionGetValue(trans, iActor);
-      for (int jActor = MFModelStatusGetNbActor(MFWorldStatus(that));
-        jActor--;) {
-        if (iActor != jActor)
-          val -= MFTransitionGetValue(trans, jActor);
+      // the sente
+      float val = (sente == -1 ? 
+        MFTransitionGetValue(trans, iActor) : 
+        MFTransitionGetValue(trans, sente));
+      if (sente != -1) {
+        for (int jActor = MFModelStatusGetNbActor(MFWorldStatus(that));
+          jActor--;) {
+          if (jActor != sente)
+            val -= MFTransitionGetValue(trans, jActor);
+        }
       }
       // If it's not the first considered transition
       if (bestTrans != NULL) {
-        // If the value is better
-        if (valBestTrans < val) {
-          // Update the best value and best transition
-          valBestTrans = val;
-          bestTrans = trans;
+        // If the sente is the requested actor
+        if (sente == -1 || sente == iActor) {
+          // If the value is better
+          if (valBestTrans < val) {
+            valBestTrans = val;
+            bestTrans = trans;
+          }
+        // Else, the sente is not the requested actor
+        } else {
+          // If the value is worst
+          if (valBestTrans > val) {
+            valBestTrans = val;
+            bestTrans = trans;
+          }
         }
       // Else it's the first considered transition
       } else {
@@ -939,39 +909,38 @@ void MFUpdateForecastValues(MiniFrame* const that,
   }
 #endif
   // Avoid infinite loop
-  if (GSetFirstElem(setWorld, world) == NULL)
+  if (GSetFirstElem(setWorld, world) == NULL) {
     GSetAppend(setWorld, (void*)world);
-  else
-    return;
-  // If the world has ancestors
-  if (GSetNbElem(MFWorldSources(world)) > 0) {
-    // Get the forecast value of the world
-    float forecastVal = MFWorldGetForecastValue(world, iActor);
-    // Declare a variable to memorize when the transition is updated
-    bool updated = false;
-    // For each transition to the world
-    GSetIterForward iter = 
-      GSetIterForwardCreateStatic(MFWorldSources(world));
-    do {
-      // Get the transition
-      MFTransition* const trans = GSetIterGet(&iter);
-      // If we are at the first level of recursion
-      if (delayPenalty == 0) {
-        // Initialize the value of the transition
-        MFTransitionSetValue(trans, iActor, forecastVal);
-        updated = true;
-      } else {
-        // Update the value of the transition
-        updated = MFTransitionUpdateValue(trans, iActor, 
-          forecastVal - (float)delayPenalty * PBMATH_EPSILON);
-      }
-      // If the value has been updated
-      if (updated) {
-        // Propagate the update from the source world
-        MFUpdateForecastValues(that, MFTransitionFromWorld(trans),
-          delayPenalty + 1, setWorld, iActor);
-      }
-    } while (GSetIterStep(&iter));
+    // If the world has ancestors
+    if (GSetNbElem(MFWorldSources(world)) > 0) {
+      // Get the forecast value of the world
+      float forecastVal = MFWorldGetForecastValue(world, iActor);
+      // Declare a variable to memorize when the transition is updated
+      bool updated = false;
+      // For each transition to the world
+      GSetIterForward iter = 
+        GSetIterForwardCreateStatic(MFWorldSources(world));
+      do {
+        // Get the transition
+        MFTransition* const trans = GSetIterGet(&iter);
+        // If we are at the first level of recursion
+        if (delayPenalty == 0) {
+          // Initialize the value of the transition
+          MFTransitionSetValue(trans, iActor, forecastVal);
+          updated = true;
+        } else {
+          // Update the value of the transition
+          updated = MFTransitionUpdateValue(trans, iActor, 
+            forecastVal - (float)delayPenalty * PBMATH_EPSILON);
+        }
+        // If the value has been updated
+        if (updated) {
+          // Propagate the update from the source world
+          MFUpdateForecastValues(that, MFTransitionFromWorld(trans),
+            delayPenalty + 1, setWorld, iActor);
+        }
+      } while (GSetIterStep(&iter));
+    }
   }
 }
 
@@ -995,30 +964,11 @@ bool MFTransitionUpdateValue(MFTransition* const that, const int iActor,
 #endif
   // Declare a variable to memorize the returned flag
   bool updated = false;
-#if MF_NBMAXACTOR == 1
-  if (that->_values[iActor] < val) {
-    updated = true;
+  // If the new value is different from the current one
+  if (!ISEQUALF(that->_values[iActor], val)) {
     that->_values[iActor] = val;
+    updated = true;
   }
-#else
-#if MF_SIMULTANEOUS_PLAY
-
-#else
-  MFWorld* fromWorld = (MFWorld*)MFTransitionFromWorld(that);
-  int sente = MFModelStatusGetSente(MFWorldStatus(fromWorld));
-  if (sente == -1 || sente == iActor) {
-    if (that->_values[iActor] < val) {
-      updated = true;
-      that->_values[iActor] = val;
-    }
-  } else {
-    if (that->_values[iActor] > val) {
-      updated = true;
-      that->_values[iActor] = val;
-    }
-  }
-#endif
-#endif
   // Return the flag
   return updated;
 }
@@ -1143,7 +1093,8 @@ void MFSetCurWorld(MiniFrame* const that,
       moved = false;
       MFWorld* world = GSetIterGet(&iter);
       // If this is the current world
-      if (MFModelStatusIsSame(MFWorldStatus(world), status)) {
+      if (!flagFound && 
+        MFModelStatusIsSame(MFWorldStatus(world), status)) {
         // Ensure that the status is exactly the same by copying the 
         // MFModelStatus struct, in case MFModelStatusIsSame refers only
         // to a subset of properties of the MFModelStatus
@@ -1160,7 +1111,7 @@ void MFSetCurWorld(MiniFrame* const that,
         // Add it to the worlds to free
         MFAddWorldToFree(that, world);
       }
-    } while (!flagFound && (moved || GSetIterStep(&iter)));
+    } while (moved || GSetIterStep(&iter));
   }
   // If we haven't found the searched status
   if (!flagFound) {
@@ -1428,10 +1379,6 @@ void MFWorldSetValues(MFWorld* const that, const float* const values) {
   float* thatValues = that->_values;
   for (int iActor = MF_NBMAXACTOR; iActor--;) {
     thatValues[iActor] = values[iActor];
-    for (int jActor = MF_NBMAXACTOR; jActor--;) {
-      if (iActor != jActor)
-        thatValues[iActor] -= values[jActor];
-    }
   }
 }
 
