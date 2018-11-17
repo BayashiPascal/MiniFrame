@@ -9,41 +9,58 @@ UnitTestMFWorldComputeTransition OK
 UnitTestMFWorld OK
 UnitTestMiniFrameCreateFree OK
 UnitTestMiniFrameGetSet OK
-Time unused by MFExpand: 99.987000
-Time search world to expand: 100.000000
-Nb world expanded: 15
-Nb world unexpanded: 0
-Nb world removed: 0
-Perc world reused: 0.666667
+Time unused by MFExpand: 99.931000
+Nb computed worlds: 9
+Nb worlds to expand: 0
+Nb worlds to free: 1
+Perc world reused: 0.625000
 Computed worlds:
-(step:3 pos:-3 tgt:2) values[-5.000000] forecast[-0.000030]
-  0) transition from (step:3 pos:-3 tgt:2) to (step:3 pos:-3 tgt:2) through (move:-1) values[-4.000000]
-  1) transition from (step:3 pos:-3 tgt:2) to (step:3 pos:-3 tgt:2) through (move:0) values[-4.000000]
-  2) transition from (step:3 pos:-3 tgt:2) to (step:2 pos:-2 tgt:2) through (move:1) values[-0.000030]
-(step:2 pos:-2 tgt:2) values[-4.000000] forecast[-0.000020]
-  0) transition from (step:2 pos:-2 tgt:2) to (step:3 pos:-3 tgt:2) through (move:-1) values[-4.000000]
-  1) transition from (step:2 pos:-2 tgt:2) to (step:2 pos:-2 tgt:2) through (move:0) values[-0.000030]
-  2) transition from (step:2 pos:-2 tgt:2) to (step:1 pos:-1 tgt:2) through (move:1) values[-0.000020]
-(step:1 pos:-1 tgt:2) values[-3.000000] forecast[-0.000010]
-  0) transition from (step:1 pos:-1 tgt:2) to (step:2 pos:-2 tgt:2) through (move:-1) values[-0.000030]
-  1) transition from (step:1 pos:-1 tgt:2) to (step:1 pos:-1 tgt:2) through (move:0) values[-0.000020]
-  2) transition from (step:1 pos:-1 tgt:2) to (step:0 pos:0 tgt:2) through (move:1) values[-0.000010]
-(step:0 pos:0 tgt:2) values[-2.000000] forecast[0.000000]
-  0) transition from (step:0 pos:0 tgt:2) to (step:1 pos:-1 tgt:2) through (move:-1) values[-0.000020]
-  1) transition from (step:0 pos:0 tgt:2) to (step:0 pos:0 tgt:2) through (move:0) values[-0.000010]
-  2) transition from (step:0 pos:0 tgt:2) to (step:1 pos:1 tgt:2) through (move:1) values[0.000000]
-(step:1 pos:1 tgt:2) values[-1.000000] forecast[0.000000]
+(step:0 pos:0 tgt:2) values[-2.000000] forecast[-0.000000]
+  0) transition from (step:0 pos:0 tgt:2) to (step:1 pos:-1 tgt:2) through (move:-1) values[-0.000000]
+  1) transition from (step:0 pos:0 tgt:2) to (step:1 pos:0 tgt:2) through (move:0) values[-0.000000]
+  2) transition from (step:0 pos:0 tgt:2) to (step:1 pos:1 tgt:2) through (move:1) values[-0.000000]
+(step:1 pos:1 tgt:2) values[-1.000000] forecast[-0.000000]
   0) transition from (step:1 pos:1 tgt:2) to (step:0 pos:0 tgt:2) through (move:-1) values[-0.000010]
-  1) transition from (step:1 pos:1 tgt:2) to (step:1 pos:1 tgt:2) through (move:0) values[0.000000]
-  2) transition from (step:1 pos:1 tgt:2) to (step:2 pos:2 tgt:2) through (move:1) values[0.000000]
-(step:2 pos:2 tgt:2) values[0.000000] forecast[0.000000]
+  1) transition from (step:1 pos:1 tgt:2) to (step:2 pos:1 tgt:2) through (move:0) values[-0.000000]
+  2) transition from (step:1 pos:1 tgt:2) to (step:2 pos:2 tgt:2) through (move:1) values[-0.000000]
+(step:2 pos:2 tgt:2) values[-0.000000] forecast[-0.000000]
+(step:2 pos:1 tgt:2) values[-1.000000] forecast[-0.000000]
+  0) transition from (step:2 pos:1 tgt:2) to (step:0 pos:0 tgt:2) through (move:-1) values[-0.000000]
+  1) transition from (step:2 pos:1 tgt:2) to (step:1 pos:1 tgt:2) through (move:0) values[-0.000000]
+  2) transition from (step:2 pos:1 tgt:2) to (step:2 pos:2 tgt:2) through (move:1) values[-0.000000]
+(step:1 pos:0 tgt:2) values[-2.000000] forecast[-0.000000]
+  0) transition from (step:1 pos:0 tgt:2) to (step:1 pos:-1 tgt:2) through (move:-1) values[-0.000000]
+  1) transition from (step:1 pos:0 tgt:2) to (step:0 pos:0 tgt:2) through (move:0) values[-0.000000]
+  2) transition from (step:1 pos:0 tgt:2) to (step:1 pos:1 tgt:2) through (move:1) values[-0.000000]
+(step:1 pos:-1 tgt:2) values[-3.000000] forecast[-0.000000]
+  0) transition from (step:1 pos:-1 tgt:2) to (step:2 pos:-2 tgt:2) through (move:-1) values[-0.000000]
+  1) transition from (step:1 pos:-1 tgt:2) to (step:2 pos:-1 tgt:2) through (move:0) values[-0.000000]
+  2) transition from (step:1 pos:-1 tgt:2) to (step:0 pos:0 tgt:2) through (move:1) values[-0.000000]
+(step:2 pos:-1 tgt:2) values[-3.000000] forecast[-0.000000]
+  0) transition from (step:2 pos:-1 tgt:2) to (step:2 pos:-2 tgt:2) through (move:-1) values[-0.000000]
+  1) transition from (step:2 pos:-1 tgt:2) to (step:1 pos:-1 tgt:2) through (move:0) values[-0.000000]
+  2) transition from (step:2 pos:-1 tgt:2) to (step:0 pos:0 tgt:2) through (move:1) values[-0.000000]
+(step:2 pos:-2 tgt:2) values[-4.000000] forecast[-0.000000]
+  0) transition from (step:2 pos:-2 tgt:2) to (<null>) through (move:-1) values[-5.000000]
+  1) transition from (step:2 pos:-2 tgt:2) to (step:3 pos:-2 tgt:2) through (move:0) values[-0.000000]
+  2) transition from (step:2 pos:-2 tgt:2) to (step:1 pos:-1 tgt:2) through (move:1) values[-0.000000]
+(step:3 pos:-2 tgt:2) values[-4.000000] forecast[-0.000000]
+  0) transition from (step:3 pos:-2 tgt:2) to (<null>) through (move:-1) values[-5.000000]
+  1) transition from (step:3 pos:-2 tgt:2) to (step:2 pos:-2 tgt:2) through (move:0) values[-0.000000]
+  2) transition from (step:3 pos:-2 tgt:2) to (step:1 pos:-1 tgt:2) through (move:1) values[-0.000000]
+Disposable worlds:
+(step:3 pos:-3 tgt:2) values[-5.000000] forecast[-5.000000]
+  0) transition from (step:3 pos:-3 tgt:2) to (<null>) through (move:-1) values[0.000000]
+  1) transition from (step:3 pos:-3 tgt:2) to (<null>) through (move:0) values[0.000000]
+  2) transition from (step:3 pos:-3 tgt:2) to (<null>) through (move:1) values[0.000000]
 Best action: 1
 UnitTestMiniFrameExpandSetCurWorld OK
 mf(step:0 pos:0 tgt:2) real(step:1 pos:1 tgt:2)
 mf(step:1 pos:1 tgt:2) real(step:2 pos:2 tgt:-1)
-mf(step:2 pos:2 tgt:-1) real(step:3 pos:1 tgt:-1)
-mf(step:3 pos:1 tgt:-1) real(step:4 pos:0 tgt:-1)
-mf(step:4 pos:0 tgt:-1) real(step:5 pos:-1 tgt:-1)
+mf(step:2 pos:2 tgt:-1) real(step:3 pos:3 tgt:-1)
+mf(step:3 pos:3 tgt:-1) real(step:4 pos:3 tgt:-1)
+mf(step:4 pos:3 tgt:-1) real(step:5 pos:3 tgt:-1)
+mf(step:5 pos:3 tgt:-1) real(step:6 pos:3 tgt:-1)
 UnitTestMiniFrameFullExample OK
 UnitTestMiniFrame OK
 UnitTestAll OK

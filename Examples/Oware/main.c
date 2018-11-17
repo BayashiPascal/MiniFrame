@@ -41,7 +41,7 @@ void RunDemo(float expansionTime, bool useNN) {
   // Set the expansion time
   MFSetMaxTimeExpansion(mf, expansionTime);
   // Set reusable worlds
-  MFSetWorldReusable(mf, true);
+  //MFSetWorldReusable(mf, true);
   // Flag to end the game
   bool flagEnd = false;
   // Loop until end of game
@@ -66,7 +66,8 @@ void RunDemo(float expansionTime, bool useNN) {
     MFWorldPrintBestStoryln(MFCurWorld(mf), 
       curWorld._curPlayer, stdout);
     printf("--- end of best story ---\n");*/
-    if (MFGetTimeUnusedExpansion(mf) < 0.0) {
+    if (MFGetTimeUnusedExpansion(mf) < -2.0) {
+      fprintf(stderr, "time out: %f !!\n", MFGetTimeUnusedExpansion(mf));
       flagEnd = true;
       curWorld._score[curWorld._curPlayer] = -1;
     } else {
@@ -124,7 +125,7 @@ void TrainOneGame(float expansionTime, GenAlgAdn** adns, GSet* result) {
   // Set the expansion time
   MFSetMaxTimeExpansion(mf, expansionTime);
   // Set reusable worlds
-  MFSetWorldReusable(mf, true);
+  //MFSetWorldReusable(mf, true);
   // Flag to end the game
   bool flagEnd = false;
   // Loop until end of game
@@ -137,7 +138,7 @@ void TrainOneGame(float expansionTime, GenAlgAdn** adns, GSet* result) {
     MFFreeDisposableWorld(mf);
     // Expand
     MFExpand(mf);
-    if (MFGetTimeUnusedExpansion(mf) < 0.0) {
+    if (MFGetTimeUnusedExpansion(mf) < -2.0) {
       flagEnd = true;
       curWorld._score[curWorld._curPlayer] = -1;
     } else {
@@ -208,62 +209,48 @@ void Train(int nbEpoch, int sizePool, int nbElite, int nbGameEpoch,
     ELORankAdd(eloRank, GSetGet(GAAdns(genAlg), iAdn));
   ELORankAdd(eloRank, (GenAlgAdn*)GABestAdn(genAlg));
   ELORankAdd(eloRank, (void*)1);
+  ELORankSetIsMilestone(eloRank, (GenAlgAdn*)GABestAdn(genAlg), true);
+  ELORankSetIsMilestone(eloRank, (void*)1, true);
   // Declare a variable to memorize the current epoch
   int iEpoch = 0;
-  
-  int iAdnGlob = 0;
-  
   // Loop on epochs
   while (iEpoch < nbEpoch) {
     // Declare a variable to memorize the current game
     int iGame = 0;
     // Loop on games
     while (iGame < nbGameEpoch) {
-      float eloRef = ELORankGetELO(eloRank, (void*)1);
-      float eloSoftRef = ELORankGetSoftELO(eloRank, (void*)1);
+      // Display some info 
+      float eloPretender = 0.0;
+      float eloSoftPretender = 0.0;
+      long int idPretender = 0;
       float eloBest = 0.0;
       float eloSoftBest = 0.0;
       long int idBest = 0;
-      if (ELORankGetRanked(eloRank, 0)->_data == (void*)1) {
-        eloBest = ELORankGetELO(eloRank, 
-          ELORankGetRanked(eloRank, 1)->_data);
-        eloSoftBest = ELORankGetSoftELO(eloRank, 
-          ELORankGetRanked(eloRank, 1)->_data);
-        idBest = GAAdnGetId(ELORankGetRanked(eloRank, 1)->_data);
-      } else {
-        eloBest = ELORankGetELO(eloRank, 
-          ELORankGetRanked(eloRank, 0)->_data);
-        eloSoftBest = ELORankGetSoftELO(eloRank, 
-          ELORankGetRanked(eloRank, 0)->_data);
-        idBest = GAAdnGetId(ELORankGetRanked(eloRank, 0)->_data);
+      int iBest =  0;
+      int iPretender = 1;
+      if (ELORankGetRanked(eloRank, iBest)->_data == (void*)1) {
+        ++iBest;
+        ++iPretender;
       }
-      fprintf(stderr, "Epoch %05d/%05d Game %03d/%03d (ref %f[%f], bestelo(%ld) %f[%f])   \r", 
-        iEpoch + 1, nbEpoch, iGame + 1, nbGameEpoch, eloRef, eloSoftRef, idBest, eloBest, eloSoftBest);
+      if (ELORankGetRanked(eloRank, iPretender)->_data == (void*)1) {
+        ++iPretender;
+      }
+      eloBest = ELORankGetELO(eloRank, 
+        ELORankGetRanked(eloRank, iBest)->_data);
+      eloSoftBest = ELORankGetSoftELO(eloRank, 
+        ELORankGetRanked(eloRank, iBest)->_data);
+      idBest = GAAdnGetId(ELORankGetRanked(eloRank, iBest)->_data);
+      eloPretender = ELORankGetELO(eloRank, 
+        ELORankGetRanked(eloRank, iPretender)->_data);
+      eloSoftPretender = ELORankGetSoftELO(eloRank, 
+        ELORankGetRanked(eloRank, iPretender)->_data);
+      idPretender = GAAdnGetId(ELORankGetRanked(eloRank, 
+        iPretender)->_data);
+      fprintf(stderr, "Epoch %05d/%05d Game %03d/%03d (bestelo(%ld) %f[%f], pretender(%ld) %f[%f])   \r", 
+        iEpoch + 1, nbEpoch, iGame + 1, nbGameEpoch, idBest, eloBest, eloSoftBest, idPretender, eloPretender, eloSoftPretender);
       fflush(stderr);
-      // Select randomly one adn (including the best adn in GenAlg to play
-      // against the reference, take care of who has the sente
-      GenAlgAdn* adns[NBPLAYER] = {NULL};
-      int iAdn = (int)round(rnd() * (float)(sizePool) - 1.0);
-      
-      iAdn = iAdnGlob;
-      ++iAdnGlob;
-      if (iAdnGlob == sizePool) iAdnGlob = -1;
-      
-      if (rnd() < 0.5) {
-        adns[0] = (void*)1;
-        if (iAdn == -1)
-          adns[1] = (GenAlgAdn*)GABestAdn(genAlg);
-        else 
-          adns[1] = GSetGet(GAAdns(genAlg), iAdn);
-      } else {
-        adns[1] = (void*)1;
-        if (iAdn == -1)
-          adns[0] = (GenAlgAdn*)GABestAdn(genAlg);
-        else 
-          adns[0] = GSetGet(GAAdns(genAlg), iAdn);
-      }
       // Select randomly two adns
-      /*GenAlgAdn* adns[NBPLAYER] = {NULL};
+      GenAlgAdn* adns[NBPLAYER] = {NULL};
       GSet setPlayers = GSetCreateStatic();
       GSetAddSort(&setPlayers, (void*)1, rnd());
       for (int iAdn = sizePool; iAdn--;)
@@ -272,15 +259,7 @@ void Train(int nbEpoch, int sizePool, int nbElite, int nbGameEpoch,
         (void)GSetDrop(&setPlayers);
       adns[0] = GSetGet(&setPlayers, 0);
       adns[1] = GSetGet(&setPlayers, 1);
-      GSetFlush(&setPlayers);*/
-      // Force the ref to play only with the elite
-      /*if (adns[0] == (void*)1) {
-        int iElite = sizePool - (int)round(rnd() * (nbElite - 2)) - 1;
-        adns[1] = GSetGet(GAAdns(genAlg), iElite);
-      } else if (adns[1] == (void*)1) {
-        int iElite = sizePool - (int)round(rnd() * (nbElite - 2)) - 1;
-        adns[0] = GSetGet(GAAdns(genAlg), iElite);
-      }*/
+      GSetFlush(&setPlayers);
       // Play the game
       TrainOneGame(expansionTime, adns, &result);
       // Update the ELORank with the result
@@ -296,23 +275,38 @@ void Train(int nbEpoch, int sizePool, int nbElite, int nbGameEpoch,
       float elo = ELORankGetSoftELO(eloRank, adn);
       GASetAdnValue(genAlg, adn, elo);
     }
-    // Update the value of the best adn too
-    GenAlgAdn* bestAdn = (GenAlgAdn*)GABestAdn(genAlg);
-    bestAdn->_val = ELORankGetSoftELO(eloRank, bestAdn);
     // Step the GenAlg
     GAStep(genAlg);
-    // Display the elo of the best and the reference
+    // Display the elo of the best of all, best and pretender
+    GenAlgAdn* bestAdn = (GenAlgAdn*)GABestAdn(genAlg);
     float eloSoftBest = GAAdnGetVal(bestAdn);
-    float eloSoftRef = ELORankGetSoftELO(eloRank, (void*)1);
-    printf("best(%ld): [%f](age %ld) ref: [%f](rank %d)\n", 
+    float eloSoftPretender = 0.0;
+    float eloSoftBestElo = 0.0;
+    int iBest =  0;
+    int iPretender = 1;
+    if (ELORankGetRanked(eloRank, iBest)->_data == (void*)1) {
+      ++iBest;
+      ++iPretender;
+    }
+    if (ELORankGetRanked(eloRank, iPretender)->_data == (void*)1) {
+      ++iPretender;
+    }
+    eloSoftBestElo = ELORankGetSoftELO(eloRank, 
+      ELORankGetRanked(eloRank, iBest)->_data);
+    eloSoftPretender = ELORankGetSoftELO(eloRank, 
+      ELORankGetRanked(eloRank, iPretender)->_data);
+    printf("best(%ld): [%f](age %ld) bestelo: [%f] pretender: [%f]\n", 
       GAAdnGetId(bestAdn), eloSoftBest, 
-      GAAdnGetAge(bestAdn), eloSoftRef, ELORankGetRank(eloRank, 
-      (void*)1));
+      GAAdnGetAge(bestAdn), eloSoftBestElo, eloSoftPretender);
     fflush(stdout);
+    // Update the milestone (block the best and the ref)
+    ELORankResetAllMilestone(eloRank);
+    ELORankSetIsMilestone(eloRank, GAAdn(genAlg, 0), true);
+    ELORankSetIsMilestone(eloRank, (void*)1, true);
     // Save the result
-    fprintf(streamRes, "%ld %f %f %d\n", 
-      GAGetCurEpoch(genAlg), eloSoftBest,
-      eloSoftRef, ELORankGetRank(eloRank, (void*)1));
+    fprintf(streamRes, "%ld %f %f %f\n", 
+      GAGetCurEpoch(genAlg), eloSoftBest, 
+      eloSoftBestElo, eloSoftPretender);
     fflush(streamRes);
     // Save the best NeuraNet to ./bestnn.txt
     NNSetBases(neuraNet, GAAdnAdnF(bestAdn));

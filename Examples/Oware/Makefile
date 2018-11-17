@@ -42,3 +42,6 @@ miniframe-model.o: miniframe-model.h miniframe-model.c Makefile
 
 automail:
 	while true; do tail -n 100 ~/GitHub/MiniFrame/Examples/Oware/res.txt | mail -s "oware"  pascalbayashi@docomo.ne.jp; sleep 3600; done
+
+trainNN:
+	main -train -nbEpoch 200 -nbElite 10 -sizePool 50 -nbGameEpoch 1500 -expTime 2.0

@@ -237,12 +237,6 @@ inline
 #endif
 int MFGetNbWorldsOnHold(const MiniFrame* const that);
 
-// Get the time used at end of expansion of the MiniFrame 'that'
-#if BUILDMODE != 0
-inline
-#endif
-float MFGetTimeEndExpansion(const MiniFrame* const that);
-
 // Get the percentage of resued world of the MiniFrame 'that' during 
 // the last MFEpxand()
 #if BUILDMODE != 0
