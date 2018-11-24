@@ -55,7 +55,7 @@ void RunDemo(float expansionTime, bool useNN) {
     printf("computed: %d, ", MFGetNbComputedWorlds(mf));
     printf("to expand: %d, ", MFGetNbWorldsToExpand(mf));
     printf("to free: %d, ", MFGetNbWorldsToFree(mf));
-    printf("reused: %f, ", MFGetPercWordReused(mf));
+    printf("reused: %f, ", MFGetPercWorldReused(mf));
     printf("unused: %fms\n", MFGetTimeUnusedExpansion(mf));
     // Free the disposable worlds
     MFFreeDisposableWorld(mf);

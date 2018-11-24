@@ -26,7 +26,9 @@
 #define MF_NBTRANSMONTECARLO 100
 // Default value for pruning during expansion
 #define MF_PRUNINGDELTAVAL 1000.0
- 
+// Default maximum depth of expansion
+#define MF_DEFAULTMAXDEPTHEXP 1000 
+
 // =========== Interface with the model implementation =============
 
 #include "miniframe-model.h"
@@ -184,14 +186,11 @@ void MFSetWorldReusable(MiniFrame* const that, const bool reuse);
 #if BUILDMODE != 0
 inline
 #endif
-void MFAddWorld(MiniFrame* const that, \
+void MFAddWorldToComputed(MiniFrame* const that, \
   const MFWorld* const world);
 
 // Add the MFWorld 'world' to the world to be expanded of the 
 // MiniFrame 'that'
-#if BUILDMODE != 0
-inline
-#endif
 void MFAddWorldToExpand(MiniFrame* const that, \
   const MFWorld* const world);
   
@@ -242,7 +241,7 @@ int MFGetNbWorldsOnHold(const MiniFrame* const that);
 #if BUILDMODE != 0
 inline
 #endif
-float MFGetPercWordReused(const MiniFrame* const that);
+float MFGetPercWorldReused(const MiniFrame* const that);
 
 // Get the clock considered has start during expansion
 #if BUILDMODE != 0
@@ -312,8 +311,8 @@ inline
 #endif
 const MFWorld* MFTransitionFromWorld(const MFTransition* const that);
 
-// Return true if the MFTransition 'that' is expandable, i.e. its
-// 'toWorld' is null, else return false
+// Return true if the MFWorld 'that' has at least one transition to be
+// expanded
 bool MFTransitionIsExpandable(const MFTransition* const that);
 
 // Get the 'iTrans' MFTransition of the MFWorld 'that'
@@ -395,8 +394,8 @@ void MFSetCurWorld(MiniFrame* const that,
 
 // Print the best forecasted story from the MFWorld 'that' for the 
 // actor 'iActor' on the stream 'stream'
-void MFWorldPrintBestStoryln(const MFWorld* const that, const int iActor, 
-  FILE* const stream);
+void MFWorldPrintBestStoryln(const MFWorld* const that, 
+  const int iActor, FILE* const stream);
 
 // Set the values of the MFWorld 'that' to 'values'
 void MFWorldSetValues(MFWorld* const that, const float* const values);

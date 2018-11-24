@@ -175,7 +175,7 @@ const GSet* MFWorldsToFree(const MiniFrame* const that) {
 #if BUILDMODE != 0
 inline
 #endif
-void MFAddWorld(MiniFrame* const that, const MFWorld* const world) {
+void MFAddWorldToComputed(MiniFrame* const that, const MFWorld* const world) {
 #if BUILDMODE == 0
   if (that == NULL) {
     MiniFrameErr->_type = PBErrTypeNullPointer;
@@ -189,33 +189,6 @@ void MFAddWorld(MiniFrame* const that, const MFWorld* const world) {
   }
 #endif
   GSetAppend(&(that->_worlds), world);  
-}
-
-// Add the MFWorld 'world' to the world to be expanded of the 
-// MiniFrame 'that'
-#if BUILDMODE != 0
-inline
-#endif
-void MFAddWorldToExpand(MiniFrame* const that, \
-  const MFWorld* const world) {
-#if BUILDMODE == 0
-  if (that == NULL) {
-    MiniFrameErr->_type = PBErrTypeNullPointer;
-    sprintf(MiniFrameErr->_msg, "'that' is null");
-    PBErrCatch(MiniFrameErr);
-  }
-  if (world == NULL) {
-    MiniFrameErr->_type = PBErrTypeNullPointer;
-    sprintf(MiniFrameErr->_msg, "'world' is null");
-    PBErrCatch(MiniFrameErr);
-  }
-#endif
-  if (MFGetExpansionType(that) == MFExpansionTypeWidth)
-    GSetPush(&(that->_worldsToExpand), world);  
-  else
-    GSetAddSort(&(that->_worldsToExpand), world, 
-      MFWorldGetForecastValue(world, 
-      MFModelStatusGetSente(MFWorldStatus(world))));
 }
 
 // Add the MFWorld 'world' to the worlds on hold of the 
@@ -275,7 +248,7 @@ int MFWorldGetNbTrans(const MFWorld* const that) {
 #if BUILDMODE != 0
 inline
 #endif
-float MFGetPercWordReused(const MiniFrame* const that) {
+float MFGetPercWorldReused(const MiniFrame* const that) {
 #if BUILDMODE == 0
   if (that == NULL) {
     MiniFrameErr->_type = PBErrTypeNullPointer;

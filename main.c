@@ -36,8 +36,8 @@ void UnitTestMFTransitionCreateFree() {
 }
 
 void UnitTestMFTransitionIsExpandable() {
-
   MFModelStatus status = {._step = 0, ._pos = 0, ._tgt = 1};
+  MiniFrame* mf = MiniFrameCreate(&status);
   MFWorld* world = MFWorldCreate(&status);
   MFModelTransition trans = {._move = 1};
   MFTransition act = MFTransitionCreateStatic(world, &trans);
@@ -63,7 +63,7 @@ void UnitTestMFTransitionIsExpandable() {
   world->_transitions[0]._toWorld = NULL;
   MFTransitionFreeStatic(&act);
   MFWorldFree(&world);
-
+  MiniFrameFree(&mf);
   printf("UnitTestMFTransitionIsExpandable OK\n");
 }
 
@@ -255,7 +255,7 @@ void UnitTestMiniFrameCreateFree() {
     GSetNbElem(MFWorldsToFree(mf)) != 0 ||
     ISEQUALF(mf->_timeUnusedExpansion, 0.0) == false ||
     ISEQUALF(mf->_percWorldReused, 0.0) == false ||
-    mf->_maxDepthExp != -1 ||
+    mf->_maxDepthExp != MF_DEFAULTMAXDEPTHEXP ||
     mf->_expansionType != MFExpansionTypeValue ||
     mf->_nbTransMonteCarlo != MF_NBTRANSMONTECARLO ||
     mf->_pruningDeltaVal != MF_PRUNINGDELTAVAL ||
@@ -313,14 +313,14 @@ void UnitTestMiniFrameGetSet() {
     PBErrCatch(MiniFrameErr);
   }
   mf->_percWorldReused = 1.0;
-  if (ISEQUALF(MFGetPercWordReused(mf), 1.0) == false) {
+  if (ISEQUALF(MFGetPercWorldReused(mf), 1.0) == false) {
     MiniFrameErr->_type = PBErrTypeUnitTestFailed;
-    sprintf(MiniFrameErr->_msg, "MFGetPercWordReused failed");
+    sprintf(MiniFrameErr->_msg, "MFGetPercWorldReused failed");
     PBErrCatch(MiniFrameErr);
   }
   MFModelStatus modelWorld = {._step = 0, ._pos = 0, ._tgt = 1};
   MFWorld* world = MFWorldCreate(&modelWorld);
-  MFAddWorld(mf, world);
+  MFAddWorldToComputed(mf, world);
   if (GSetNbElem(MFWorlds(mf)) != 2 ||
     MFModelStatusIsSame(MFWorldStatus(world),
       (MFModelStatus*)GSetGet(MFWorlds(mf), 1)) == false) {
@@ -350,10 +350,10 @@ void UnitTestMiniFrameGetSet() {
     PBErrCatch(MiniFrameErr);
   }
   mf->_percWorldReused = 4.0;
-  if (ISEQUALF(MFGetPercWordReused(mf), 
+  if (ISEQUALF(MFGetPercWorldReused(mf), 
     mf->_percWorldReused) == false) {
     MiniFrameErr->_type = PBErrTypeUnitTestFailed;
-    sprintf(MiniFrameErr->_msg, "MFGetPercWordReused failed");
+    sprintf(MiniFrameErr->_msg, "MFGetPercWorldReused failed");
     PBErrCatch(MiniFrameErr);
   }
   clock_t now = clock();
@@ -432,7 +432,7 @@ void UnitTestMiniFrameExpandSetCurWorld() {
   printf("Nb computed worlds: %d\n", MFGetNbComputedWorlds(mf));
   printf("Nb worlds to expand: %d\n", MFGetNbWorldsToExpand(mf));
   printf("Nb worlds to free: %d\n", MFGetNbWorldsToFree(mf));
-  printf("Perc world reused: %f\n", MFGetPercWordReused(mf));
+  printf("Perc world reused: %f\n", MFGetPercWorldReused(mf));
   printf("Computed worlds:\n");
   GSetIterForward iter = 
     GSetIterForwardCreateStatic(MFWorlds(mf));
@@ -450,7 +450,7 @@ void UnitTestMiniFrameExpandSetCurWorld() {
     MFGetNbComputedWorlds(mf) != 9 ||
     MFGetNbWorldsToExpand(mf) != 0 ||
     MFGetNbWorldsToFree(mf) != 1 ||
-    ISEQUALF(MFGetPercWordReused(mf), 0.625) == false) {
+    ISEQUALF(MFGetPercWorldReused(mf), 0.625) == false) {
     MiniFrameErr->_type = PBErrTypeUnitTestFailed;
     sprintf(MiniFrameErr->_msg, "MFExpand failed");
     PBErrCatch(MiniFrameErr);
@@ -489,8 +489,8 @@ void UnitTestMiniFrameFullExample() {
   MFModelStatus curWorld = {._step = 0, ._pos = 0, ._tgt = 2};
   // Create the MiniFrame
   MiniFrame* mf = MiniFrameCreate(&curWorld);
-  // Set reusable worlds
-  MFSetWorldReusable(mf, true);
+  MFSetWorldReusable(mf, false);
+  MFSetExpansionType(mf, MFExpansionTypeWidth);
   // Loop until end of game
   int tgt[7] = {2,2,-1,-1,-1,-1,-1};
   while (!MFModelStatusIsEnd(&curWorld)) {
@@ -516,9 +516,9 @@ void UnitTestMiniFrameFullExample() {
     printf(") real(");
     MFModelStatusPrint(&curWorld, stdout);
     printf(")\n");
-    /*MFWorldTransPrintln(MFCurWorld(mf), stdout);  
-    printf("--- start of best story ---\n");
-    MFWorldPrintBestStoryln(MFCurWorld(mf), 0, stdout);
+    MFWorldTransPrintln(MFCurWorld(mf), stdout);  
+    /*printf("--- start of best story ---\n");
+    MFWorldPrintBestStoryln(MFCurWorld(mf), 0, stdout, mf);
     printf("--- end of best story ---\n");
     printf("\n");*/
   }

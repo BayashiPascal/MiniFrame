@@ -120,7 +120,7 @@ void MFModelTransitionPrint(const MFModelTransition* const that,
 // be discarded to fit the physical memory available
 // Having too many world instances in memory also slow down the 
 // exploration of worlds during expansion
-bool MFModelStatusIsDisposable(const MFModelStatus* const that, 
+bool MFModelStatusIsDisposable(const MFModelStatus* const that,
   const MFModelStatus* const curStatus);
 
 // Return true if the MFModelStatus 'that' is the end of the 
