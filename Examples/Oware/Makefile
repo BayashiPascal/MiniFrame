@@ -45,3 +45,7 @@ automail:
 
 trainNN:
 	main -train -nbEpoch 200 -nbElite 10 -sizePool 50 -nbGameEpoch 1500 -expTime 2.0
+
+valgrind :
+	valgrind -v --track-origins=yes --leak-check=full \
+	--gen-suppressions=yes --show-leak-kinds=all ./main -demo 

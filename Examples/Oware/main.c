@@ -54,11 +54,8 @@ void RunDemo(float expansionTime, bool useNN) {
     // Display info
     printf("computed: %d, ", MFGetNbComputedWorlds(mf));
     printf("to expand: %d, ", MFGetNbWorldsToExpand(mf));
-    printf("to free: %d, ", MFGetNbWorldsToFree(mf));
     printf("reused: %f, ", MFGetPercWorldReused(mf));
     printf("unused: %fms\n", MFGetTimeUnusedExpansion(mf));
-    // Free the disposable worlds
-    MFFreeDisposableWorld(mf);
     // Expand
     MFExpand(mf);
     //MFWorldTransPrintln(MFCurWorld(mf), stdout);
@@ -134,8 +131,6 @@ void TrainOneGame(float expansionTime, GenAlgAdn** adns, GSet* result) {
     MFSetStartExpandClock(mf, clock());
     // Correct the current world in the MiniFrame
     MFSetCurWorld(mf, &curWorld);
-    // Free the disposable worlds
-    MFFreeDisposableWorld(mf);
     // Expand
     MFExpand(mf);
     if (MFGetTimeUnusedExpansion(mf) < -2.0) {

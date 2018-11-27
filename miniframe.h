@@ -28,7 +28,19 @@
 #define MF_PRUNINGDELTAVAL 1000.0
 // Default maximum depth of expansion
 #define MF_DEFAULTMAXDEPTHEXP 1000 
-
+// Expansion type (0: by value, 1: by width)
+#define MF_EXPANSIONTYPE 1
+// Use of MonteCarlo
+#define MF_USEMONTECARLO true
+// Use of pruning
+#define MF_USEPRUNING true
+// Use telemetry
+#define MF_USETELEMETRY true
+// Reuse world
+#define MF_REUSEWORLD true
+// Use of depth limit
+#define MF_LIMITDEPTH true
+ 
 // =========== Interface with the model implementation =============
 
 #include "miniframe-model.h"
@@ -74,13 +86,9 @@ typedef struct MiniFrame {
   MFWorld* _curWorld;
   // All the computed world instances, ordered by their value from the
   // pov of the preempting player at the previous step
-  GSet _worlds;
+  GSet _worldsComputed;
   // Set of world waiting to be expanded
   GSet _worldsToExpand;
-  // Set of world waiting to be freed
-  GSet _worldsToFree;
-  // Set of worlds on hold during expansion
-  GSet _worldsOnHold;
   // Time limit for expansion, in millisecond
   float _maxTimeExpansion;
   // Time unused during expansion, in millisecond
@@ -94,15 +102,12 @@ typedef struct MiniFrame {
   clock_t _startExpandClock;
   // Maximum depth during expansion, if -1 there is no limit
   int _maxDepthExp;
-  // Type of expansion, default is MFExpansionTypeValue
-  MFExpansionType _expansionType;
   // Number of transitions above which the Monte Carlo algorithm is 
   // activated during expansion
   int _nbTransMonteCarlo;
   // Value for pruning during expansion
   float _pruningDeltaVal;
 } MiniFrame;
-
 
 // ================ Functions declaration ====================
 
@@ -140,25 +145,13 @@ const MFWorld* MFCurWorld(const MiniFrame* const that);
 #if BUILDMODE != 0
 inline
 #endif
-const GSet* MFWorlds(const MiniFrame* const that);
+const GSet* MFWorldsComputed(const MiniFrame* const that);
 
 // Get the GSet of worlds to expand of the MiniFrame 'that'
 #if BUILDMODE != 0
 inline
 #endif
 const GSet* MFWorldsToExpand(const MiniFrame* const that);
-
-// Get the GSet of worlds on hold of the MiniFrame 'that'
-#if BUILDMODE != 0
-inline
-#endif
-const GSet* MFWorldsOnHold(const MiniFrame* const that);
-
-// Get the GSet of worlds to free of the MiniFrame 'that'
-#if BUILDMODE != 0
-inline
-#endif
-const GSet* MFWorldsToFree(const MiniFrame* const that);
 
 // Get the nb of world To expande of the MiniFrame 'that'
 #if BUILDMODE != 0
@@ -173,12 +166,14 @@ inline
 #endif
 bool MFIsWorldReusable(const MiniFrame* const that);
 
+#if MF_REUSEWORLD
 // Set the flag controling if the expansion algorithm looks in 
 // previously computed worlds for same world to reuse to 'reuse'
 #if BUILDMODE != 0
 inline
 #endif
 void MFSetWorldReusable(MiniFrame* const that, const bool reuse);
+#endif
 
 // Add the MFWorld 'world' to the computed MFWorlds of the 
 // MiniFrame 'that', ordered by the world's value from the pov of 
@@ -192,18 +187,6 @@ void MFAddWorldToComputed(MiniFrame* const that, \
 // Add the MFWorld 'world' to the world to be expanded of the 
 // MiniFrame 'that'
 void MFAddWorldToExpand(MiniFrame* const that, \
-  const MFWorld* const world);
-  
-// Add the MFWorld 'world' to the world to be freeed of the 
-// MiniFrame 'that'
-void MFAddWorldToFree(MiniFrame* const that, MFWorld* const world);
-  
-// Add the MFWorld 'world' to the worlds on hold of the 
-// MiniFrame 'that'
-#if BUILDMODE != 0
-inline
-#endif
-void MFAddWorldToOnHold(MiniFrame* const that, \
   const MFWorld* const world);
   
 // Get the time limit for expansion of the MiniFrame 'that'
@@ -223,18 +206,6 @@ float MFGetTimeUnusedExpansion(const MiniFrame* const that);
 inline
 #endif
 int MFGetNbComputedWorlds(const MiniFrame* const that);
-
-// Get the nb of worlds to remove of the MiniFrame 'that'
-#if BUILDMODE != 0
-inline
-#endif
-int MFGetNbWorldsToFree(const MiniFrame* const that);
-
-// Get the nb of worlds on hold of the MiniFrame 'that'
-#if BUILDMODE != 0
-inline
-#endif
-int MFGetNbWorldsOnHold(const MiniFrame* const that);
 
 // Get the percentage of resued world of the MiniFrame 'that' during 
 // the last MFEpxand()
@@ -406,6 +377,7 @@ inline
 #endif
 int MFGetMaxDepthExp(const MiniFrame* const that);
 
+#if MF_LIMITDEPTH
 // Set the max depth during expansion for the MiniFrame 'that' to 'depth'
 // If depth is less than -1 it is converted to -1
 // If the expansion type is not by width the max expansion depth is 
@@ -414,6 +386,7 @@ int MFGetMaxDepthExp(const MiniFrame* const that);
 inline
 #endif
 void MFSetMaxDepthExp(MiniFrame* const that, const int depth);
+#endif
 
 // Return the type of expansion for the MiniFrame 'that'
 #if BUILDMODE != 0
@@ -421,25 +394,14 @@ inline
 #endif
 MFExpansionType MFGetExpansionType(const MiniFrame* const that);
 
-// Set the type expansion for the MiniFrame 'that' to 'type'
-#if BUILDMODE != 0
-inline
-#endif
-void MFSetExpansionType(MiniFrame* const that, const MFExpansionType type);
-
-// Set the nb of transitio to activate MonteCarlo during expansion
-// for the MiniFrame 'that' to 'nb'
-#if BUILDMODE != 0
-inline
-#endif
-void MFSetNbTransMonteCarlo(MiniFrame* const that, const int nb);
-
+#if MF_USEMONTECARLO
 // Set the nb of transitions to activate MonteCarlo during expansion
 // for the MiniFrame 'that' to 'nb'
 #if BUILDMODE != 0
 inline
 #endif
 void MFSetNbTransMonteCarlo(MiniFrame* const that, const int nb);
+#endif
 
 // Get the nb of transitions to activate MonteCarlo during expansion
 // for the MiniFrame 'that'
@@ -454,22 +416,20 @@ inline
 #endif
 bool MFTransitionIsExpanded(const MFTransition* const that);
 
+#if MF_USEPRUNING
 // Set the pruning threshold during expansion for the MiniFrame 'that' 
 // to 'val'
 #if BUILDMODE != 0
 inline
 #endif
 void MFSetPruningDeltaVal(MiniFrame* const that, const float val);
+#endif
 
 // Get the pruning threshold during expansion for the MiniFrame 'that'
 #if BUILDMODE != 0
 inline
 #endif
 float MFGetPruningDeltaVal(const MiniFrame* const that);
-
-// Free the memory used by the disposable worlds in the computed worlds
-// of the MinFrame 'that'
-void MFFreeDisposableWorld(MiniFrame* const that);
 
 // ================ Inliner ====================
 

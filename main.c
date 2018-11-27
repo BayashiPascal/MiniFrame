@@ -12,7 +12,6 @@
 #define RANDOMSEED 0
 
 void UnitTestMFTransitionCreateFree() {
-
   MFWorld world;
   MFModelTransition trans = {._move = 1};
   MFTransition act = MFTransitionCreateStatic(&world, &trans);
@@ -37,7 +36,6 @@ void UnitTestMFTransitionCreateFree() {
 
 void UnitTestMFTransitionIsExpandable() {
   MFModelStatus status = {._step = 0, ._pos = 0, ._tgt = 1};
-  MiniFrame* mf = MiniFrameCreate(&status);
   MFWorld* world = MFWorldCreate(&status);
   MFModelTransition trans = {._move = 1};
   MFTransition act = MFTransitionCreateStatic(world, &trans);
@@ -63,7 +61,6 @@ void UnitTestMFTransitionIsExpandable() {
   world->_transitions[0]._toWorld = NULL;
   MFTransitionFreeStatic(&act);
   MFWorldFree(&world);
-  MiniFrameFree(&mf);
   printf("UnitTestMFTransitionIsExpandable OK\n");
 }
 
@@ -242,21 +239,17 @@ void UnitTestMFWorld() {
 }
 
 void UnitTestMiniFrameCreateFree() {
-
   MFModelStatus initStatus = {._step = 0, ._pos = 0, ._tgt = 1};
   MiniFrame* mf = MiniFrameCreate(&initStatus);
   if (mf == NULL ||
     mf->_nbStep != 0 ||
     ISEQUALF(mf->_maxTimeExpansion, MF_DEFAULTTIMEEXPANSION) == false ||
     MFModelStatusIsSame(&initStatus, &(MFCurWorld(mf)->_status)) == false ||
-    MFCurWorld(mf) != GSetGet(MFWorlds(mf), 0) ||
-    GSetNbElem(MFWorlds(mf)) != 1 ||
-    GSetNbElem(MFWorldsToExpand(mf)) != 0 ||
-    GSetNbElem(MFWorldsToFree(mf)) != 0 ||
+    GSetNbElem(MFWorldsToExpand(mf)) != 1 ||
+    MFCurWorld(mf) != GSetGet(MFWorldsToExpand(mf), 0) ||
     ISEQUALF(mf->_timeUnusedExpansion, 0.0) == false ||
     ISEQUALF(mf->_percWorldReused, 0.0) == false ||
     mf->_maxDepthExp != MF_DEFAULTMAXDEPTHEXP ||
-    mf->_expansionType != MFExpansionTypeValue ||
     mf->_nbTransMonteCarlo != MF_NBTRANSMONTECARLO ||
     mf->_pruningDeltaVal != MF_PRUNINGDELTAVAL ||
     mf->_reuseWorld != false) {
@@ -295,7 +288,7 @@ void UnitTestMiniFrameGetSet() {
     sprintf(MiniFrameErr->_msg, "MFCurWorld failed");
     PBErrCatch(MiniFrameErr);
   }
-  if (MFWorlds(mf) != &(mf->_worlds)) {
+  if (MFWorldsComputed(mf) != &(mf->_worldsComputed)) {
     MiniFrameErr->_type = PBErrTypeUnitTestFailed;
     sprintf(MiniFrameErr->_msg, "MFWorlds failed");
     PBErrCatch(MiniFrameErr);
@@ -321,25 +314,18 @@ void UnitTestMiniFrameGetSet() {
   MFModelStatus modelWorld = {._step = 0, ._pos = 0, ._tgt = 1};
   MFWorld* world = MFWorldCreate(&modelWorld);
   MFAddWorldToComputed(mf, world);
-  if (GSetNbElem(MFWorlds(mf)) != 2 ||
+  if (GSetNbElem(MFWorldsComputed(mf)) != 1 ||
     MFModelStatusIsSame(MFWorldStatus(world),
-      (MFModelStatus*)GSetGet(MFWorlds(mf), 1)) == false) {
+      (MFModelStatus*)GSetGet(MFWorldsComputed(mf), 0)) == false) {
     MiniFrameErr->_type = PBErrTypeUnitTestFailed;
-    sprintf(MiniFrameErr->_msg, "MFAddWorld failed");
+    sprintf(MiniFrameErr->_msg, "MFAddWorldToComputed failed");
     PBErrCatch(MiniFrameErr);
   }
   MFWorld* worldToExpand = MFWorldCreate(&modelWorld);
   MFAddWorldToExpand(mf, worldToExpand);
-  if (GSetNbElem(MFWorldsToExpand(mf)) != 1) {
+  if (GSetNbElem(MFWorldsToExpand(mf)) != 2) {
     MiniFrameErr->_type = PBErrTypeUnitTestFailed;
     sprintf(MiniFrameErr->_msg, "MFAddWorldToExpand failed");
-    PBErrCatch(MiniFrameErr);
-  }
-  MFWorld* worldToFree = MFWorldCreate(&modelWorld);
-  MFAddWorldToFree(mf, worldToFree);
-  if (GSetNbElem(MFWorldsToFree(mf)) != 1) {
-    MiniFrameErr->_type = PBErrTypeUnitTestFailed;
-    sprintf(MiniFrameErr->_msg, "MFAddWorldToFree failed");
     PBErrCatch(MiniFrameErr);
   }
   mf->_timeUnusedExpansion = 3.0;
@@ -385,17 +371,6 @@ void UnitTestMiniFrameGetSet() {
     sprintf(MiniFrameErr->_msg, "MFSetMaxDepthExp failed");
     PBErrCatch(MiniFrameErr);
   }
-  if (MFGetExpansionType(mf) != mf->_expansionType) {
-    MiniFrameErr->_type = PBErrTypeUnitTestFailed;
-    sprintf(MiniFrameErr->_msg, "MFGetExpansionType failed");
-    PBErrCatch(MiniFrameErr);
-  }
-  MFSetExpansionType(mf, MFExpansionTypeWidth);
-  if (MFGetExpansionType(mf) != MFExpansionTypeWidth) {
-    MiniFrameErr->_type = PBErrTypeUnitTestFailed;
-    sprintf(MiniFrameErr->_msg, "MFSetExpansionType failed");
-    PBErrCatch(MiniFrameErr);
-  }
   if (MFGetNbTransMonteCarlo(mf) != mf->_nbTransMonteCarlo) {
     MiniFrameErr->_type = PBErrTypeUnitTestFailed;
     sprintf(MiniFrameErr->_msg, "MFGetNbTransMonteCarlo failed");
@@ -431,26 +406,18 @@ void UnitTestMiniFrameExpandSetCurWorld() {
   printf("Time unused by MFExpand: %f\n", MFGetTimeUnusedExpansion(mf));
   printf("Nb computed worlds: %d\n", MFGetNbComputedWorlds(mf));
   printf("Nb worlds to expand: %d\n", MFGetNbWorldsToExpand(mf));
-  printf("Nb worlds to free: %d\n", MFGetNbWorldsToFree(mf));
   printf("Perc world reused: %f\n", MFGetPercWorldReused(mf));
   printf("Computed worlds:\n");
   GSetIterForward iter = 
-    GSetIterForwardCreateStatic(MFWorlds(mf));
-  do {
-    MFWorld* world = GSetIterGet(&iter);
-    MFWorldTransPrintln(world, stdout);
-  } while (GSetIterStep(&iter));
-  printf("Disposable worlds:\n");
-  iter = GSetIterForwardCreateStatic(MFWorldsToFree(mf));
+    GSetIterForwardCreateStatic(MFWorldsComputed(mf));
   do {
     MFWorld* world = GSetIterGet(&iter);
     MFWorldTransPrintln(world, stdout);
   } while (GSetIterStep(&iter));
   if (mf->_timeUnusedExpansion < 0.0 ||
-    MFGetNbComputedWorlds(mf) != 9 ||
+    MFGetNbComputedWorlds(mf) != 7 ||
     MFGetNbWorldsToExpand(mf) != 0 ||
-    MFGetNbWorldsToFree(mf) != 1 ||
-    ISEQUALF(MFGetPercWorldReused(mf), 0.625) == false) {
+    ISEQUALF(MFGetPercWorldReused(mf), 0.666667) == false) {
     MiniFrameErr->_type = PBErrTypeUnitTestFailed;
     sprintf(MiniFrameErr->_msg, "MFExpand failed");
     PBErrCatch(MiniFrameErr);
@@ -475,7 +442,7 @@ void UnitTestMiniFrameExpandSetCurWorld() {
   }
   MFModelStatus nextWorld = {._pos = -1, ._tgt = 2};
   MFSetCurWorld(mf, &nextWorld);
-  if (MFCurWorld(mf) != GSetGet(MFWorlds(mf), 5)) {
+  if (MFCurWorld(mf) != GSetGet(MFWorldsComputed(mf), 1)) {
     MiniFrameErr->_type = PBErrTypeUnitTestFailed;
     sprintf(MiniFrameErr->_msg, "MFSetCurWorld failed");
     PBErrCatch(MiniFrameErr);
@@ -490,7 +457,6 @@ void UnitTestMiniFrameFullExample() {
   // Create the MiniFrame
   MiniFrame* mf = MiniFrameCreate(&curWorld);
   MFSetWorldReusable(mf, false);
-  MFSetExpansionType(mf, MFExpansionTypeWidth);
   // Loop until end of game
   int tgt[7] = {2,2,-1,-1,-1,-1,-1};
   while (!MFModelStatusIsEnd(&curWorld)) {
@@ -498,18 +464,6 @@ void UnitTestMiniFrameFullExample() {
     MFSetStartExpandClock(mf, clock());
     // Correct the current world in the MiniFrame
     MFSetCurWorld(mf, &curWorld);
-    // Free the disposable worlds
-    MFFreeDisposableWorld(mf);
-    // Expand
-    MFExpand(mf);
-    // Get best transition
-    const MFModelTransition* bestTrans = MFBestTransition(mf, 0);
-    if (bestTrans != NULL) {
-      // Step with best transition
-      curWorld = MFModelStatusStep(&curWorld, bestTrans);
-    }
-    // Apply external forces to the world
-    curWorld._tgt = tgt[curWorld._step];
     // Display the current world
     printf("mf(");
     MFModelStatusPrint(MFWorldStatus(MFCurWorld(mf)), stdout);
@@ -521,6 +475,16 @@ void UnitTestMiniFrameFullExample() {
     MFWorldPrintBestStoryln(MFCurWorld(mf), 0, stdout, mf);
     printf("--- end of best story ---\n");
     printf("\n");*/
+    // Expand
+    MFExpand(mf);
+    // Get best transition
+    const MFModelTransition* bestTrans = MFBestTransition(mf, 0);
+    if (bestTrans != NULL) {
+      // Step with best transition
+      curWorld = MFModelStatusStep(&curWorld, bestTrans);
+    }
+    // Apply external forces to the world
+    curWorld._tgt = tgt[curWorld._step];
   }
   MiniFrameFree(&mf);
   printf("UnitTestMiniFrameFullExample OK\n");

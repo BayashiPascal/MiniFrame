@@ -198,7 +198,7 @@ MFModelStatus MFModelStatusStep(const MFModelStatus* const that,
   status._step = that->_step + 1;
   status._tgt = that->_tgt;
   status._pos = that->_pos + trans->_move;
-  int limit = 3;
+  int limit = 4;
   if (status._pos < -limit) status._pos = -limit;
   if (status._pos > limit) status._pos = limit;
   // Return the status
@@ -264,7 +264,7 @@ bool MFModelStatusIsDisposable(const MFModelStatus* const that,
     PBErrCatch(MiniFrameErr);
   }
 #endif
-  if (abs(that->_pos - curStatus->_pos) > 2)
+  if (abs(that->_pos - curStatus->_pos) > 4)
     return true;
   else
     return false;
@@ -280,7 +280,7 @@ bool MFModelStatusIsEnd(const MFModelStatus* const that) {
     PBErrCatch(MiniFrameErr);
   }
 #endif
-  if (that->_step >= 6 || that->_pos == that->_tgt) {
+  if (that->_step >= 7 || that->_pos == that->_tgt) {
     return true;
   } else {
     return false;

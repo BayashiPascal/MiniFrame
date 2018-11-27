@@ -114,7 +114,7 @@ const MFWorld* MFCurWorld(const MiniFrame* const that) {
 #if BUILDMODE != 0
 inline
 #endif
-const GSet* MFWorlds(const MiniFrame* const that) {
+const GSet* MFWorldsComputed(const MiniFrame* const that) {
 #if BUILDMODE == 0
   if (that == NULL) {
     MiniFrameErr->_type = PBErrTypeNullPointer;
@@ -122,7 +122,7 @@ const GSet* MFWorlds(const MiniFrame* const that) {
     PBErrCatch(MiniFrameErr);
   }
 #endif
-  return &(that->_worlds);
+  return &(that->_worldsComputed);
 }
 
 // Get the GSet of worlds to expand of the MiniFrame 'that'
@@ -138,36 +138,6 @@ const GSet* MFWorldsToExpand(const MiniFrame* const that) {
   }
 #endif
   return &(that->_worldsToExpand);
-}
-
-// Get the GSet of worlds on hold of the MiniFrame 'that'
-#if BUILDMODE != 0
-inline
-#endif
-const GSet* MFWorldsOnHold(const MiniFrame* const that) {
-#if BUILDMODE == 0
-  if (that == NULL) {
-    MiniFrameErr->_type = PBErrTypeNullPointer;
-    sprintf(MiniFrameErr->_msg, "'that' is null");
-    PBErrCatch(MiniFrameErr);
-  }
-#endif
-  return &(that->_worldsOnHold);
-}
-
-// Get the GSet of worlds to free of the MiniFrame 'that'
-#if BUILDMODE != 0
-inline
-#endif
-const GSet* MFWorldsToFree(const MiniFrame* const that) {
-#if BUILDMODE == 0
-  if (that == NULL) {
-    MiniFrameErr->_type = PBErrTypeNullPointer;
-    sprintf(MiniFrameErr->_msg, "'that' is null");
-    PBErrCatch(MiniFrameErr);
-  }
-#endif
-  return &(that->_worldsToFree);
 }
 
 // Add the MFWorld 'world' to the computed MFWorlds of the 
@@ -188,29 +158,7 @@ void MFAddWorldToComputed(MiniFrame* const that, const MFWorld* const world) {
     PBErrCatch(MiniFrameErr);
   }
 #endif
-  GSetAppend(&(that->_worlds), world);  
-}
-
-// Add the MFWorld 'world' to the worlds on hold of the 
-// MiniFrame 'that'
-#if BUILDMODE != 0
-inline
-#endif
-void MFAddWorldToOnHold(MiniFrame* const that, \
-  const MFWorld* const world) {
-#if BUILDMODE == 0
-  if (that == NULL) {
-    MiniFrameErr->_type = PBErrTypeNullPointer;
-    sprintf(MiniFrameErr->_msg, "'that' is null");
-    PBErrCatch(MiniFrameErr);
-  }
-  if (world == NULL) {
-    MiniFrameErr->_type = PBErrTypeNullPointer;
-    sprintf(MiniFrameErr->_msg, "'world' is null");
-    PBErrCatch(MiniFrameErr);
-  }
-#endif
-  GSetPush(&(that->_worldsOnHold), world);  
+  GSetAppend((GSet*)MFWorldsComputed(that), world);  
 }
 
 // Return the MFModelStatus of the MFWorld 'that'
@@ -322,6 +270,7 @@ bool MFIsWorldReusable(const MiniFrame* const that) {
   return that->_reuseWorld;
 }
 
+#if MF_REUSEWORLD
 // Set the flag controling if the expansion algorithm looks in 
 // previously computed worlds for same world to reuse to 'reuse'
 #if BUILDMODE != 0
@@ -337,6 +286,7 @@ void MFSetWorldReusable(MiniFrame* const that, const bool reuse) {
 #endif
   that->_reuseWorld = reuse;
 }
+#endif
 
 // Get the MFWorld which the MFTransition 'that' is leading to
 #if BUILDMODE != 0
@@ -420,39 +370,8 @@ int MFGetNbComputedWorlds(const MiniFrame* const that) {
     PBErrCatch(MiniFrameErr);
   }
 #endif
-  return GSetNbElem(&(that->_worlds));
+  return GSetNbElem(MFWorldsComputed(that));
 }
-
-// Get the nb of worlds to remove of the MiniFrame 'that'
-#if BUILDMODE != 0
-inline
-#endif
-int MFGetNbWorldsToFree(const MiniFrame* const that) {
-#if BUILDMODE == 0
-  if (that == NULL) {
-    MiniFrameErr->_type = PBErrTypeNullPointer;
-    sprintf(MiniFrameErr->_msg, "'that' is null");
-    PBErrCatch(MiniFrameErr);
-  }
-#endif
-  return GSetNbElem(MFWorldsToFree(that));
-}
-
-// Get the nb of worlds on hold of the MiniFrame 'that'
-#if BUILDMODE != 0
-inline
-#endif
-int MFGetNbWorldsOnHold(const MiniFrame* const that) {
-#if BUILDMODE == 0
-  if (that == NULL) {
-    MiniFrameErr->_type = PBErrTypeNullPointer;
-    sprintf(MiniFrameErr->_msg, "'that' is null");
-    PBErrCatch(MiniFrameErr);
-  }
-#endif
-  return GSetNbElem(MFWorldsOnHold(that));
-}
-
 
 // Return the value of the MFWorld 'that' for the 
 // actor 'iActor'.
@@ -546,6 +465,7 @@ int MFGetMaxDepthExp(const MiniFrame* const that) {
   return that->_maxDepthExp;
 }
 
+#if MF_LIMITDEPTH
 // Set the max depth during expansion for the MiniFrame 'that' to 'depth'
 // If depth is less than -1 it is converted to -1
 // If the expansion type is not by width the max expansion depth is 
@@ -563,6 +483,7 @@ void MFSetMaxDepthExp(MiniFrame* const that, const int depth) {
 #endif
   that->_maxDepthExp = MAX(-1, depth);
 }
+#endif
 
 // Return the type of expansion for the MiniFrame 'that'
 #if BUILDMODE != 0
@@ -576,24 +497,11 @@ MFExpansionType MFGetExpansionType(const MiniFrame* const that) {
     PBErrCatch(MiniFrameErr);
   }
 #endif
-  return that->_expansionType;
+  (void)that;
+  return MF_EXPANSIONTYPE;
 }
 
-// Set the type expansion for the MiniFrame 'that' to 'type'
-#if BUILDMODE != 0
-inline
-#endif
-void MFSetExpansionType(MiniFrame* const that, const MFExpansionType type) {
-#if BUILDMODE == 0
-  if (that == NULL) {
-    MiniFrameErr->_type = PBErrTypeNullPointer;
-    sprintf(MiniFrameErr->_msg, "'that' is null");
-    PBErrCatch(MiniFrameErr);
-  }
-#endif
-  that->_expansionType = type;
-}
-
+#if MF_USEMONTECARLO
 // Set the nb of transitions to activate MonteCarlo during expansion
 // for the MiniFrame 'that' to 'nb'
 #if BUILDMODE != 0
@@ -614,6 +522,7 @@ void MFSetNbTransMonteCarlo(MiniFrame* const that, const int nb) {
 #endif
   that->_nbTransMonteCarlo = nb;
 }
+#endif
 
 // Get the nb of transitions to activate MonteCarlo during expansion
 // for the MiniFrame 'that'
@@ -646,6 +555,7 @@ bool MFTransitionIsExpanded(const MFTransition* const that) {
   return (that->_toWorld != NULL);
 }
 
+#if MF_USEPRUNING
 // Set the pruning threshold during expansion for the MiniFrame 'that' 
 // to 'val'
 #if BUILDMODE != 0
@@ -661,6 +571,7 @@ void MFSetPruningDeltaVal(MiniFrame* const that, const float val) {
 #endif
   that->_pruningDeltaVal = val;
 }
+#endif
 
 // Get the pruning threshold during expansion for the MiniFrame 'that'
 #if BUILDMODE != 0
