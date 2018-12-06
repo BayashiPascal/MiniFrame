@@ -316,8 +316,9 @@ void MFExpand(MiniFrame* that) {
             expandedWorld->_depth = worldToExpand->_depth + 1;
 #if MF_USEPRUNING
             // If the expanded world is pruned
-            if (MFWorldIsPrunedDuringExpansion(
-              expandedWorld, that, trans)) {
+            if (MFCurWorld(that) != worldToExpand &&
+              MFWorldIsPrunedDuringExpansion(
+                expandedWorld, that, trans)) {
               // Add it to the computed worlds
               MFAddWorldToComputed(that, expandedWorld);
             // Else, the world is not pruned
