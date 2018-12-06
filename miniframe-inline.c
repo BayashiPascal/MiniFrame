@@ -588,4 +588,34 @@ float MFGetPruningDeltaVal(const MiniFrame* const that) {
   return that->_pruningDeltaVal;
 }
 
+// Get the nb of worlds not found during MFSetCurWorld
+#if BUILDMODE != 0
+inline
+#endif
+int MFGetNbWorldNotFound(const MiniFrame* const that) {
+#if BUILDMODE == 0
+  if (that == NULL) {
+    MiniFrameErr->_type = PBErrTypeNullPointer;
+    sprintf(MiniFrameErr->_msg, "'that' is null");
+    PBErrCatch(MiniFrameErr);
+  }
+#endif
+  return that->_nbWorldNotFound;
+}
+
+// Get the max depth reached during last call of MFExpand
+#if BUILDMODE != 0
+inline
+#endif
+int MFGetMaxDepthExpReached(const MiniFrame* const that) {
+#if BUILDMODE == 0
+  if (that == NULL) {
+    MiniFrameErr->_type = PBErrTypeNullPointer;
+    sprintf(MiniFrameErr->_msg, "'that' is null");
+    PBErrCatch(MiniFrameErr);
+  }
+#endif
+  return that->_maxDepthExpReached;
+}
+
 

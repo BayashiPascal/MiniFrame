@@ -107,6 +107,10 @@ typedef struct MiniFrame {
   int _nbTransMonteCarlo;
   // Value for pruning during expansion
   float _pruningDeltaVal;
+  // Nb of world not found in MFSetCurWorld
+  int _nbWorldNotFound;
+  // Max depth reached during last MFExpand
+  int _maxDepthExpReached;
 } MiniFrame;
 
 // ================ Functions declaration ====================
@@ -430,6 +434,18 @@ void MFSetPruningDeltaVal(MiniFrame* const that, const float val);
 inline
 #endif
 float MFGetPruningDeltaVal(const MiniFrame* const that);
+
+// Get the nb of worlds not found during MFSetCurWorld
+#if BUILDMODE != 0
+inline
+#endif
+int MFGetNbWorldNotFound(const MiniFrame* const that);
+
+// Get the max depth reached during last call of MFExpand
+#if BUILDMODE != 0
+inline
+#endif
+int MFGetMaxDepthExpReached(const MiniFrame* const that);
 
 // ================ Inliner ====================
 

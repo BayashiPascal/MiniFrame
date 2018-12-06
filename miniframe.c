@@ -88,6 +88,8 @@ MiniFrame* MiniFrameCreate(const MFModelStatus* const initStatus) {
   that->_maxDepthExp = MF_DEFAULTMAXDEPTHEXP;
   that->_nbTransMonteCarlo = MF_NBTRANSMONTECARLO;
   that->_pruningDeltaVal = MF_PRUNINGDELTAVAL;
+  that->_maxDepthExpReached = 0;
+  that->_nbWorldNotFound = 0;
   // Return the new MiniFrame
   return that;
 }
@@ -220,6 +222,7 @@ void MFExpand(MiniFrame* that) {
   // step of expansion
   double maxTimeOneStep = 0.0;
 #if MF_USETELEMETRY
+  that->_maxDepthExpReached = that->_curWorld->_depth;
   // Declare a variable to memorize the number of reused worlds
   int nbReusedWorld = 0;
   // Declare a variable to memorize the number of worlds searched for 
@@ -314,6 +317,10 @@ void MFExpand(MiniFrame* that) {
             MFWorld* expandedWorld = MFWorldCreate(&status);
             // Update the depth of the world
             expandedWorld->_depth = worldToExpand->_depth + 1;
+#if MF_USETELEMETRY
+            if (that->_maxDepthExpReached < expandedWorld->_depth)
+              that->_maxDepthExpReached = expandedWorld->_depth;
+#endif
 #if MF_USEPRUNING
             // If the expanded world is pruned
             if (MFCurWorld(that) != worldToExpand &&
@@ -996,6 +1003,7 @@ void MFSetCurWorld(MiniFrame* const that,
   }
   // If we haven't found the searched status
   if (!flagFound) {
+    ++(that->_nbWorldNotFound);
     // Create a new MFWorld with the current status
     MFWorld* world = MFWorldCreate(status);
     // Update the current world
