@@ -1006,6 +1006,13 @@ void MFSetCurWorld(MiniFrame* const that,
     ++(that->_nbWorldNotFound);
     // Create a new MFWorld with the current status
     MFWorld* world = MFWorldCreate(status);
+    // Set the depth of the new world to the depth of the current world
+#if MF_SIMULTANEOUS_PLAY
+    world->_depth = that->_curWorld->_depth + 1;
+#else
+    world->_depth = that->_curWorld->_depth + 
+      MFModelStatusGetNbActor(status);
+#endif
     // Update the current world
     that->_curWorld = world;
 #if MF_REUSEWORLD == false

@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.14159265-2.6-1.40.16 (TeX Live 2015/Debian) (preloaded format=pdflatex 2018.10.18)  6 DEC 2018 18:47
+This is pdfTeX, Version 3.14159265-2.6-1.40.16 (TeX Live 2015/Debian) (preloaded format=pdflatex 2018.10.18)  6 DEC 2018 19:03
 entering extended mode
  \write18 enabled.
  %&-line parsing enabled.
@@ -579,8 +579,9 @@ niframe-model.h; ln -s -f $(MF_MODEL_PATH)/miniframe-inline-model.c $($(repo)_D
 IR)/miniframe-inline-model.c[] 
  []
 
+[40]
 File: /home/bayashi/GitHub/MiniFrame/main.c  (verbatim)
-[40] [41] [42] [43] [44] [45] [46] [47] [48]
+ [41] [42] [43] [44] [45] [46] [47] [48]
 File: /home/bayashi/GitHub/MiniFrame/unitTestRef.txt  (verbatim)
 
 Overfull \hbox (39.25616pt too wide) in paragraph at lines 65--65
@@ -648,7 +649,7 @@ Overfull \hbox (39.25616pt too wide) in paragraph at lines 65--65
 tgt:2) through (move:0) values[0.000000][] 
  []
 
-
+[49]
 Overfull \hbox (39.25616pt too wide) in paragraph at lines 65--65
 []  \OT1/cmtt/m/n/8 2) transition from (step:2 pos:-2 tgt:2) to (step:1 pos:-1 
 tgt:2) through (move:1) values[0.000000][] 
@@ -672,7 +673,7 @@ Overfull \hbox (39.25616pt too wide) in paragraph at lines 65--65
 tgt:2) through (move:1) values[0.000000][] 
  []
 
-[49]
+
 Overfull \hbox (43.50623pt too wide) in paragraph at lines 65--65
 []  \OT1/cmtt/m/n/8 0) transition from (step:4 pos:-4 tgt:2) to (step:4 pos:-4 
 tgt:2) through (move:-1) values[0.000000][] 
@@ -740,9 +741,10 @@ verbatim)
  [53] [54] [55] [56]
 File: /home/bayashi/GitHub/MiniFrame/Examples/BasicExample/miniframe-inline-mod
 el.c  (verbatim)
+ [57]
 File: /home/bayashi/GitHub/MiniFrame/Examples/Oware/miniframe-model.h  (verbati
 m)
- [57] [58] [59]
+ [58] [59]
 File: /home/bayashi/GitHub/MiniFrame/Examples/Oware/miniframe-model.c  (verbati
 m)
  [60] [61] [62] [63] [64]
@@ -779,7 +781,7 @@ rame_LINK_ARG) -o main; rm $(miniframe_DIR)/miniframe-model.h; rm $(miniframe_D
 IR)/miniframe-inline-model.c[] 
  []
 
-
+[74]
 Overfull \hbox (154.00781pt too wide) in paragraph at lines 135--135
 []\OT1/cmtt/m/n/8 $(COMPILER) $(BUILD_ARG) $(MODEL_INC_DIR) $(miniframe_BUILD_A
 RG) `echo "$(miniframe_INC_DIR)" | tr ' ' '\n' | sort -u` -c main.c[] 
@@ -792,7 +794,7 @@ miniframe-model.h; ln -s -f $(MF_MODEL_PATH)/miniframe-inline-model.c $(minifra
 me_DIR)/miniframe-inline-model.c[] 
  []
 
-[74]
+
 Overfull \hbox (171.00806pt too wide) in paragraph at lines 135--135
 []\OT1/cmtt/m/n/8 while true; do tail -n 100 ~/GitHub/MiniFrame/Examples/Oware/
 res.txt | mail -s "oware"  pascalbayashi@docomo.ne.jp; sleep 3600; done[] 
@@ -889,7 +891,7 @@ Overfull \hbox (69.00659pt too wide) in paragraph at lines 151--151
 856293], pretender(346) 195.739639[164.121933])[] 
  []
 
-
+[78]
 Overfull \hbox (69.00659pt too wide) in paragraph at lines 151--151
 []\OT1/cmtt/m/n/8 Epoch 00014/00200 Game 1500/1500 (bestelo(13) 212.469742[212.
 169662], pretender(330) 192.361740[178.079391])[] 
@@ -913,7 +915,7 @@ Overfull \hbox (69.00659pt too wide) in paragraph at lines 151--151
 417252], pretender(243) 177.903946[179.042343])[] 
  []
 
-[78]
+
 Overfull \hbox (69.00659pt too wide) in paragraph at lines 151--151
 []\OT1/cmtt/m/n/8 Epoch 00018/00200 Game 1500/1500 (bestelo(13) 212.469742[212.
 439926], pretender(243) 212.137985[184.109634])[] 
@@ -1075,7 +1077,7 @@ Overfull \hbox (73.25665pt too wide) in paragraph at lines 151--151
 469727], pretender(1604) 144.583191[121.916214])[] 
  []
 
-
+[79]
 Overfull \hbox (73.25665pt too wide) in paragraph at lines 151--151
 []\OT1/cmtt/m/n/8 Epoch 00045/00200 Game 1500/1500 (bestelo(13) 212.469742[212.
 469727], pretender(1604) 136.143341[128.964249])[] 
@@ -1093,7 +1095,7 @@ Overfull \hbox (73.25665pt too wide) in paragraph at lines 151--151
 469727], pretender(1604) 129.967361[138.585617])[] 
  []
 
-[79]
+
 Overfull \hbox (73.25665pt too wide) in paragraph at lines 151--151
 []\OT1/cmtt/m/n/8 Epoch 00048/00200 Game 1500/1500 (bestelo(13) 212.469742[212.
 469727], pretender(1604) 116.885513[131.981216])[] 
@@ -1261,7 +1263,7 @@ Overfull \hbox (81.75677pt too wide) in paragraph at lines 151--151
 9.573959], pretender(2411) 130.179108[130.538025])[] 
  []
 
-
+[80]
 Overfull \hbox (81.75677pt too wide) in paragraph at lines 151--151
 []\OT1/cmtt/m/n/8 Epoch 00076/00200 Game 1500/1500 (bestelo(2307) 229.594940[22
 9.584259], pretender(2796) 167.501862[126.438347])[] 
@@ -1279,7 +1281,7 @@ Overfull \hbox (77.50671pt too wide) in paragraph at lines 151--151
 9.591370], pretender(3073) 144.086990[85.926750])[] 
  []
 
-[80]
+
 Overfull \hbox (77.50671pt too wide) in paragraph at lines 151--151
 []\OT1/cmtt/m/n/8 Epoch 00079/00200 Game 1500/1500 (bestelo(2307) 229.594940[22
 9.593353], pretender(3113) 139.090790[88.162521])[] 
@@ -1447,7 +1449,7 @@ Overfull \hbox (81.75677pt too wide) in paragraph at lines 151--151
 9.594727], pretender(4057) 225.231689[171.806107])[] 
  []
 
-
+[81]
 Overfull \hbox (81.75677pt too wide) in paragraph at lines 151--151
 []\OT1/cmtt/m/n/8 Epoch 00107/00200 Game 1500/1500 (bestelo(4057) 236.670853[20
 3.361832], pretender(2307) 229.594940[229.594727])[] 
@@ -1465,7 +1467,7 @@ Overfull \hbox (81.75677pt too wide) in paragraph at lines 151--151
 9.594727], pretender(4171) 196.451492[166.330307])[] 
  []
 
-[81]
+
 Overfull \hbox (77.50671pt too wide) in paragraph at lines 151--151
 []\OT1/cmtt/m/n/8 Epoch 00110/00200 Game 1500/1500 (bestelo(2307) 229.594940[22
 9.594727], pretender(4372) 162.936630[88.812630])[] 
@@ -1633,7 +1635,7 @@ Overfull \hbox (81.75677pt too wide) in paragraph at lines 151--151
 9.594727], pretender(5308) 177.949844[151.278275])[] 
  []
 
-
+[82]
 Overfull \hbox (81.75677pt too wide) in paragraph at lines 151--151
 []\OT1/cmtt/m/n/8 Epoch 00138/00200 Game 1500/1500 (bestelo(2307) 229.594940[22
 9.594727], pretender(5423) 173.656403[129.033493])[] 
@@ -1651,7 +1653,7 @@ Overfull \hbox (81.75677pt too wide) in paragraph at lines 151--151
 9.594727], pretender(5423) 225.403442[186.906204])[] 
  []
 
-[82]
+
 Overfull \hbox (81.75677pt too wide) in paragraph at lines 151--151
 []\OT1/cmtt/m/n/8 Epoch 00141/00200 Game 1500/1500 (bestelo(2307) 229.594940[22
 9.594727], pretender(5402) 139.014297[114.284004])[] 
@@ -1819,7 +1821,7 @@ Overfull \hbox (77.50671pt too wide) in paragraph at lines 151--151
 9.594727], pretender(6659) 153.608337[90.125031])[] 
  []
 
-
+[83]
 Overfull \hbox (81.75677pt too wide) in paragraph at lines 151--151
 []\OT1/cmtt/m/n/8 Epoch 00169/00200 Game 1500/1500 (bestelo(2307) 229.594940[22
 9.594727], pretender(6659) 147.808243[112.006447])[] 
@@ -1837,7 +1839,7 @@ Overfull \hbox (81.75677pt too wide) in paragraph at lines 151--151
 9.594727], pretender(6659) 169.093506[154.313675])[] 
  []
 
-[83]
+
 Overfull \hbox (81.75677pt too wide) in paragraph at lines 151--151
 []\OT1/cmtt/m/n/8 Epoch 00172/00200 Game 1500/1500 (bestelo(2307) 229.594940[22
 9.594727], pretender(6659) 156.216721[158.283127])[] 
@@ -2005,7 +2007,7 @@ Overfull \hbox (81.75677pt too wide) in paragraph at lines 151--151
 9.594727], pretender(7831) 150.507187[132.258820])[] 
  []
 
-
+[84]
 Overfull \hbox (81.75677pt too wide) in paragraph at lines 151--151
 []\OT1/cmtt/m/n/8 Epoch 00200/00200 Game 1500/1500 (bestelo(2307) 229.594940[22
 9.594727], pretender(7831) 142.231277[136.350327])[] 
@@ -2016,7 +2018,7 @@ Underfull \hbox (badness 10000) in paragraph at lines 155--156
 
  []
 
-[84]
+
 </home/bayashi/GitHub/MiniFrame/Examples/Oware/training.png, id=275, 715.67375p
 t x 334.24875pt>
 File: /home/bayashi/GitHub/MiniFrame/Examples/Oware/training.png Graphic file (
@@ -2035,7 +2037,7 @@ Here is how much of TeX's memory you used:
  16378 multiletter control sequences out of 15000+600000
  12740 words of font info for 50 fonts, out of 8000000 for 9000
  372 hyphenation exceptions out of 8191
- 55i,6n,54p,436b,311s stack positions out of 5000i,500n,10000p,200000b,80000s
+ 55i,6n,54p,436b,310s stack positions out of 5000i,500n,10000p,200000b,80000s
 </usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmbx
 12.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmr12.pfb>
 </usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmr17.pfb></usr/s
@@ -2043,7 +2045,7 @@ hare/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmtt12.pfb></usr/share/t
 exlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmtt8.pfb>
 
 pdfTeX warning: pdflatex: no GlyphToUnicode entry has been inserted yet!
-Output written on doc.pdf (85 pages, 231043 bytes).
+Output written on doc.pdf (85 pages, 231605 bytes).
 PDF statistics:
  300 PDF objects out of 1000 (max. 8388607)
  0 named destinations out of 1000 (max. 500000)
