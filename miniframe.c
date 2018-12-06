@@ -984,6 +984,11 @@ void MFSetCurWorld(MiniFrame* const that,
           // Update the curWorld in MiniFrame
           that->_curWorld = world;
           flagFound = true;
+          // Put the current world at the end of the worlds to expand
+          // to be sure it will be the first expanded
+          bool moved = GSetIterForwardRemoveElem(&iter);
+          (void)moved;
+          GSetAppend((GSet*)MFWorldsToExpand(that), world);
         }
       } while (!flagFound && GSetIterStep(&iter));
     }
@@ -992,10 +997,21 @@ void MFSetCurWorld(MiniFrame* const that,
   if (!flagFound) {
     // Create a new MFWorld with the current status
     MFWorld* world = MFWorldCreate(status);
-    // Add it to the worlds to expand
-    MFAddWorldToExpand(that, world);
     // Update the current world
     that->_curWorld = world;
+#if MF_REUSEWORLD == false
+    // Flush all the worlds
+    while(MFGetNbComputedWorlds(that) > 0) {
+      world = GSetPop((GSet*)MFWorldsComputed(that));
+      MFWorldFree(&world);
+    }
+    while(MFGetNbWorldsToExpand(that) > 0) {
+      world = GSetPop((GSet*)MFWorldsToExpand(that));
+      MFWorldFree(&world);
+    }
+#endif
+    // Add it to the worlds to expand
+    GSetAppend((GSet*)MFWorldsToExpand(that), that->_curWorld);
   }
 }
 
@@ -1190,6 +1206,3 @@ void MFAddWorldToExpand(MiniFrame* const that, \
   GSetPush(&(that->_worldsToExpand), (MFWorld*)world);  
 #endif
 }
-
-
-
