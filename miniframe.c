@@ -110,10 +110,6 @@ MFWorld* MFWorldCreate(const MFModelStatus* const status) {
   MFModelStatusCopy(status, &(that->_status));
   // Initialise the set of transitions reaching this world
   that->_sources = GSetCreateStatic();
-  // Set the values
-  float values[MF_NBMAXACTOR] = {0.0};
-  MFModelStatusGetValues(status, values);
-  MFWorldSetValues(that, values);
   // Set the possible transitions from this world 
   MFModelTransition transitions[MF_NBMAXTRANSITION];
   MFModelStatusGetTrans(status, transitions, &(that->_nbTransition));
@@ -121,6 +117,10 @@ MFWorld* MFWorldCreate(const MFModelStatus* const status) {
   for (int iTrans = that->_nbTransition; iTrans--;)
     thatTransitions[iTrans] = 
       MFTransitionCreateStatic(that, transitions + iTrans);
+  // Set the values
+  float values[MF_NBMAXACTOR] = {0.0};
+  MFModelStatusGetValues(status, values);
+  MFWorldSetValues(that, values);
   // Init the depth
   that->_depth = 0;
   // Return the new MFWorld
@@ -1003,7 +1003,9 @@ void MFSetCurWorld(MiniFrame* const that,
   }
   // If we haven't found the searched status
   if (!flagFound) {
+#if MF_USETELEMETRY
     ++(that->_nbWorldNotFound);
+#endif
     // Create a new MFWorld with the current status
     MFWorld* world = MFWorldCreate(status);
     // Set the depth of the new world to the depth of the current world

@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.14159265-2.6-1.40.16 (TeX Live 2015/Debian) (preloaded format=pdflatex 2018.10.18)  6 DEC 2018 19:03
+This is pdfTeX, Version 3.14159265-2.6-1.40.16 (TeX Live 2015/Debian) (preloaded format=pdflatex 2018.10.18)  9 DEC 2018 14:57
 entering extended mode
  \write18 enabled.
  %&-line parsing enabled.
@@ -637,7 +637,7 @@ Overfull \hbox (35.0061pt too wide) in paragraph at lines 65--65
 t:2) through (move:1) values[-0.000000][] 
  []
 
-
+[49]
 Overfull \hbox (43.50623pt too wide) in paragraph at lines 65--65
 []  \OT1/cmtt/m/n/8 0) transition from (step:2 pos:-2 tgt:2) to (step:3 pos:-3 
 tgt:2) through (move:-1) values[0.000000][] 
@@ -649,7 +649,7 @@ Overfull \hbox (39.25616pt too wide) in paragraph at lines 65--65
 tgt:2) through (move:0) values[0.000000][] 
  []
 
-[49]
+
 Overfull \hbox (39.25616pt too wide) in paragraph at lines 65--65
 []  \OT1/cmtt/m/n/8 2) transition from (step:2 pos:-2 tgt:2) to (step:1 pos:-1 
 tgt:2) through (move:1) values[0.000000][] 
@@ -885,13 +885,13 @@ Overfull \hbox (69.00659pt too wide) in paragraph at lines 151--151
 .325104], pretender(13) 212.469742[211.402878])[] 
  []
 
-
+[78]
 Overfull \hbox (69.00659pt too wide) in paragraph at lines 151--151
 []\OT1/cmtt/m/n/8 Epoch 00013/00200 Game 1500/1500 (bestelo(13) 212.469742[211.
 856293], pretender(346) 195.739639[164.121933])[] 
  []
 
-[78]
+
 Overfull \hbox (69.00659pt too wide) in paragraph at lines 151--151
 []\OT1/cmtt/m/n/8 Epoch 00014/00200 Game 1500/1500 (bestelo(13) 212.469742[212.
 169662], pretender(330) 192.361740[178.079391])[] 
@@ -1071,13 +1071,13 @@ Overfull \hbox (73.25665pt too wide) in paragraph at lines 151--151
 469727], pretender(1303) 155.163742[119.594902])[] 
  []
 
-
+[79]
 Overfull \hbox (73.25665pt too wide) in paragraph at lines 151--151
 []\OT1/cmtt/m/n/8 Epoch 00044/00200 Game 1500/1500 (bestelo(13) 212.469742[212.
 469727], pretender(1604) 144.583191[121.916214])[] 
  []
 
-[79]
+
 Overfull \hbox (73.25665pt too wide) in paragraph at lines 151--151
 []\OT1/cmtt/m/n/8 Epoch 00045/00200 Game 1500/1500 (bestelo(13) 212.469742[212.
 469727], pretender(1604) 136.143341[128.964249])[] 
@@ -1257,13 +1257,13 @@ Overfull \hbox (81.75677pt too wide) in paragraph at lines 151--151
 9.555603], pretender(2411) 133.402206[137.798279])[] 
  []
 
-
+[80]
 Overfull \hbox (81.75677pt too wide) in paragraph at lines 151--151
 []\OT1/cmtt/m/n/8 Epoch 00075/00200 Game 1500/1500 (bestelo(2307) 229.594940[22
 9.573959], pretender(2411) 130.179108[130.538025])[] 
  []
 
-[80]
+
 Overfull \hbox (81.75677pt too wide) in paragraph at lines 151--151
 []\OT1/cmtt/m/n/8 Epoch 00076/00200 Game 1500/1500 (bestelo(2307) 229.594940[22
 9.584259], pretender(2796) 167.501862[126.438347])[] 
@@ -1443,13 +1443,13 @@ Overfull \hbox (81.75677pt too wide) in paragraph at lines 151--151
 9.594727], pretender(4057) 179.249252[136.584869])[] 
  []
 
-
+[81]
 Overfull \hbox (81.75677pt too wide) in paragraph at lines 151--151
 []\OT1/cmtt/m/n/8 Epoch 00106/00200 Game 1500/1500 (bestelo(2307) 229.594940[22
 9.594727], pretender(4057) 225.231689[171.806107])[] 
  []
 
-[81]
+
 Overfull \hbox (81.75677pt too wide) in paragraph at lines 151--151
 []\OT1/cmtt/m/n/8 Epoch 00107/00200 Game 1500/1500 (bestelo(4057) 236.670853[20
 3.361832], pretender(2307) 229.594940[229.594727])[] 
@@ -1629,13 +1629,13 @@ Overfull \hbox (81.75677pt too wide) in paragraph at lines 151--151
 9.594727], pretender(5308) 187.812531[137.062103])[] 
  []
 
-
+[82]
 Overfull \hbox (81.75677pt too wide) in paragraph at lines 151--151
 []\OT1/cmtt/m/n/8 Epoch 00137/00200 Game 1500/1500 (bestelo(2307) 229.594940[22
 9.594727], pretender(5308) 177.949844[151.278275])[] 
  []
 
-[82]
+
 Overfull \hbox (81.75677pt too wide) in paragraph at lines 151--151
 []\OT1/cmtt/m/n/8 Epoch 00138/00200 Game 1500/1500 (bestelo(2307) 229.594940[22
 9.594727], pretender(5423) 173.656403[129.033493])[] 
@@ -1815,13 +1815,13 @@ Overfull \hbox (77.50671pt too wide) in paragraph at lines 151--151
 9.594727], pretender(6561) 121.406502[99.650978])[] 
  []
 
-
+[83]
 Overfull \hbox (77.50671pt too wide) in paragraph at lines 151--151
 []\OT1/cmtt/m/n/8 Epoch 00168/00200 Game 1500/1500 (bestelo(2307) 229.594940[22
 9.594727], pretender(6659) 153.608337[90.125031])[] 
  []
 
-[83]
+
 Overfull \hbox (81.75677pt too wide) in paragraph at lines 151--151
 []\OT1/cmtt/m/n/8 Epoch 00169/00200 Game 1500/1500 (bestelo(2307) 229.594940[22
 9.594727], pretender(6659) 147.808243[112.006447])[] 
@@ -2001,13 +2001,13 @@ Overfull \hbox (81.75677pt too wide) in paragraph at lines 151--151
 9.594727], pretender(7831) 150.140503[127.012932])[] 
  []
 
-
+[84]
 Overfull \hbox (81.75677pt too wide) in paragraph at lines 151--151
 []\OT1/cmtt/m/n/8 Epoch 00199/00200 Game 1500/1500 (bestelo(2307) 229.594940[22
 9.594727], pretender(7831) 150.507187[132.258820])[] 
  []
 
-[84]
+
 Overfull \hbox (81.75677pt too wide) in paragraph at lines 151--151
 []\OT1/cmtt/m/n/8 Epoch 00200/00200 Game 1500/1500 (bestelo(2307) 229.594940[22
 9.594727], pretender(7831) 142.231277[136.350327])[] 
@@ -2045,7 +2045,7 @@ hare/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmtt12.pfb></usr/share/t
 exlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmtt8.pfb>
 
 pdfTeX warning: pdflatex: no GlyphToUnicode entry has been inserted yet!
-Output written on doc.pdf (85 pages, 231605 bytes).
+Output written on doc.pdf (85 pages, 231640 bytes).
 PDF statistics:
  300 PDF objects out of 1000 (max. 8388607)
  0 named destinations out of 1000 (max. 500000)
