@@ -104,6 +104,14 @@ void MFModelStatusGetValues(const MFModelStatus* const that,
 MFModelStatus MFModelStatusStep(const MFModelStatus* const that, 
   const MFModelTransition* const trans);
 
+// Preprocess of one turn of the game
+// Return the game as it is if nothing to do
+MFModelStatus MFModelStatusStepInit(const MFModelStatus* const that);
+
+// Postprocess of one turn of the game
+// Return the game as it is if nothing to do
+MFModelStatus MFModelStatusStepEnd(const MFModelStatus* const that);
+
 // Print the MFModelStatus 'that' on the stream 'stream' 
 void MFModelStatusPrint(const MFModelStatus* const that, 
   FILE* const stream);

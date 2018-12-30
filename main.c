@@ -250,7 +250,6 @@ void UnitTestMiniFrameCreateFree() {
     ISEQUALF(mf->_timeUnusedExpansion, 0.0) == false ||
     ISEQUALF(mf->_percWorldReused, 0.0) == false ||
     mf->_maxDepthExp != MF_DEFAULTMAXDEPTHEXP ||
-    mf->_nbTransMonteCarlo != MF_NBTRANSMONTECARLO ||
     mf->_pruningDeltaVal != MF_PRUNINGDELTAVAL ||
     mf->_reuseWorld != false) {
     MiniFrameErr->_type = PBErrTypeUnitTestFailed;
@@ -371,17 +370,6 @@ void UnitTestMiniFrameGetSet() {
     sprintf(MiniFrameErr->_msg, "MFSetMaxDepthExp failed");
     PBErrCatch(MiniFrameErr);
   }
-  if (MFGetNbTransMonteCarlo(mf) != mf->_nbTransMonteCarlo) {
-    MiniFrameErr->_type = PBErrTypeUnitTestFailed;
-    sprintf(MiniFrameErr->_msg, "MFGetNbTransMonteCarlo failed");
-    PBErrCatch(MiniFrameErr);
-  }
-  MFSetNbTransMonteCarlo(mf, 10);
-  if (MFGetNbTransMonteCarlo(mf) != 10) {
-    MiniFrameErr->_type = PBErrTypeUnitTestFailed;
-    sprintf(MiniFrameErr->_msg, "MFSetNbTransMonteCarlo failed");
-    PBErrCatch(MiniFrameErr);
-  }
   if (MFGetPruningDeltaVal(mf) != mf->_pruningDeltaVal) {
     MiniFrameErr->_type = PBErrTypeUnitTestFailed;
     sprintf(MiniFrameErr->_msg, "MFGetPruningDeltaVal failed");
@@ -415,7 +403,7 @@ void UnitTestMiniFrameExpandSetCurWorld() {
     MFWorldTransPrintln(world, stdout);
   } while (GSetIterStep(&iter));
   if (mf->_timeUnusedExpansion < 0.0 ||
-    MFGetNbComputedWorlds(mf) != 7 ||
+    MFGetNbComputedWorlds(mf) != 13 ||
     MFGetNbWorldsToExpand(mf) != 0 ||
     ISEQUALF(MFGetPercWorldReused(mf), 0.666667) == false) {
     MiniFrameErr->_type = PBErrTypeUnitTestFailed;

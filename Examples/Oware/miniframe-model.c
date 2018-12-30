@@ -283,6 +283,17 @@ MFModelStatus MFModelStatusStep(const MFModelStatus* const that,
   return status;
 }
 
+// Preprocess of one turn of the game
+// Return the game as it is if nothing to do
+MFModelStatus MFModelStatusStepInit(const MFModelStatus* const that) {
+  return *that;
+}
+// Postprocess of one turn of the game
+// Return the game as it is if nothing to do
+MFModelStatus MFModelStatusStepEnd(const MFModelStatus* const that) {
+  return *that;
+}
+
 // Print the MFModelStatus 'that' on the stream 'stream' 
 void MFModelStatusPrint(const MFModelStatus* const that, 
   FILE* const stream) {

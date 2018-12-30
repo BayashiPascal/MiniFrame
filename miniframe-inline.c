@@ -242,7 +242,7 @@ MFModelStatus MFWorldComputeTransition(const MFWorld* const that,
     sprintf(MiniFrameErr->_msg, "'that' is null");
     PBErrCatch(MiniFrameErr);
   }
-  if (iTrans <0 || iTrans >= that->_nbTransition) {
+  if (iTrans < 0 || iTrans >= that->_nbTransition) {
     MiniFrameErr->_type = PBErrTypeInvalidArg;
     sprintf(MiniFrameErr->_msg, "'iTrans' is invalid (0<=%d<%d)",
       iTrans, that->_nbTransition);
@@ -250,8 +250,10 @@ MFModelStatus MFWorldComputeTransition(const MFWorld* const that,
   }
 #endif
   // Return the resulting MFModelStatus
-  return MFModelStatusStep((const MFModelStatus* const)that, 
+  MFModelStatus res = MFModelStatusStepEnd(MFWorldStatus(that));
+  res = MFModelStatusStep(&res, 
     (const MFModelTransition* const)MFWorldTransition(that, iTrans));
+  return MFModelStatusStepInit(&res);
 }
 
 // Return true if the expansion algorithm looks in previously 
@@ -499,45 +501,6 @@ MFExpansionType MFGetExpansionType(const MiniFrame* const that) {
 #endif
   (void)that;
   return MF_EXPANSIONTYPE;
-}
-
-#if MF_USEMONTECARLO
-// Set the nb of transitions to activate MonteCarlo during expansion
-// for the MiniFrame 'that' to 'nb'
-#if BUILDMODE != 0
-inline
-#endif
-void MFSetNbTransMonteCarlo(MiniFrame* const that, const int nb) {
-#if BUILDMODE == 0
-  if (that == NULL) {
-    MiniFrameErr->_type = PBErrTypeNullPointer;
-    sprintf(MiniFrameErr->_msg, "'that' is null");
-    PBErrCatch(MiniFrameErr);
-  }
-  if (nb <= 0) {
-    MiniFrameErr->_type = PBErrTypeInvalidArg;
-    sprintf(MiniFrameErr->_msg, "'nb' is invalid (%d>0)", nb);
-    PBErrCatch(MiniFrameErr);
-  }
-#endif
-  that->_nbTransMonteCarlo = nb;
-}
-#endif
-
-// Get the nb of transitions to activate MonteCarlo during expansion
-// for the MiniFrame 'that'
-#if BUILDMODE != 0
-inline
-#endif
-int MFGetNbTransMonteCarlo(const MiniFrame* const that) {
-#if BUILDMODE == 0
-  if (that == NULL) {
-    MiniFrameErr->_type = PBErrTypeNullPointer;
-    sprintf(MiniFrameErr->_msg, "'that' is null");
-    PBErrCatch(MiniFrameErr);
-  }
-#endif
-  return that->_nbTransMonteCarlo;
 }
 
 // Return true if the MFTransition is expanded, false else

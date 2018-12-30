@@ -86,10 +86,12 @@ MiniFrame* MiniFrameCreate(const MFModelStatus* const initStatus) {
   that->_percWorldReused = 0.0;
   that->_startExpandClock = 0;
   that->_maxDepthExp = MF_DEFAULTMAXDEPTHEXP;
-  that->_nbTransMonteCarlo = MF_NBTRANSMONTECARLO;
   that->_pruningDeltaVal = MF_PRUNINGDELTAVAL;
   that->_maxDepthExpReached = 0;
   that->_nbWorldNotFound = 0;
+#if MF_EXPANSIONTYPE == MF_EXPANSIONTYPE_BYDEPTH_RANDOMWALK
+  that->_expByDepthAppendPos = 0;
+#endif
   // Return the new MiniFrame
   return that;
 }
@@ -234,6 +236,9 @@ void MFExpand(MiniFrame* that) {
     ((double)(clock() - clockStart)) / MF_MILLISECTOCLOCKS;
   // Ensure the set of world to expand is not empty
   if (GSetNbElem(MFWorldsToExpand(that)) == 0) {
+#if MF_EXPANSIONTYPE == MF_EXPANSIONTYPE_BYDEPTH_RANDOMWALK
+    that->_expByDepthAppendPos = 0;
+#endif
     MFAddWorldToExpand(that, MFCurWorld(that));
     GSetRemoveFirst((GSet*)MFWorldsComputed(that), MFCurWorld(that));
   }
@@ -245,23 +250,20 @@ void MFExpand(MiniFrame* that) {
   // Loop until we have time for one more step of expansion or there
   // is no world to expand
   // Take care of clock() wrapping around
-  GSetIterBackward iter = 
-    GSetIterBackwardCreateStatic((GSet*)MFWorldsToExpand(that));
-  bool moved = false;
-  do {
-    moved = false;
+  while (timeUsed + maxTimeOneStep < MFGetMaxTimeExpansion(that) &&
+    GSetNbElem(MFWorldsToExpand(that)) > 0 &&
+    timeUsed >= 0.0) {
     // Declare a variable to memorize the time at the beginning of one
     // step of expansion
     clock_t clockStartLoop = clock();
     // Drop the world to expand with highest value
-    MFWorld* worldToExpand = GSetIterGet(&iter);
+    MFWorld* worldToExpand = GSetDrop((GSet*)MFWorldsToExpand(that));
     // If this world is disposable
     if (worldToExpand != MFCurWorld(that) && (
       GSetNbElem(MFWorldSources(worldToExpand)) == 0 || 
       MFModelStatusIsDisposable(MFWorldStatus(worldToExpand), 
       MFWorldStatus(MFCurWorld(that))))) {
-      // Remove this world and free it
-      moved = GSetIterRemoveElem(&iter);
+      // Free this world
       MFWorldFree(&worldToExpand);
     // Else, if this world is under the limit by depth of expansion 
     // it needs to be expanded
@@ -270,17 +272,6 @@ void MFExpand(MiniFrame* that) {
       if (worldToExpand->_depth <= limitDepthExpansion) 
 #endif
     {
-#if MF_USEMONTECARLO
-      // Get the number of expandable transition
-      int nbTransExpandable = 
-        MFWorldGetNbTransExpandable(worldToExpand);
-      // Get the threshold for expansion to activate MonteCarlo when 
-      // there are too many transitions
-      float thresholdMonteCarlo = 2.0;
-      if (nbTransExpandable > 0)
-        thresholdMonteCarlo = (float)MFGetNbTransMonteCarlo(that) / 
-          (float)nbTransExpandable;
-#endif
       // For each transitions from the expanded world and until we have
       // time available
       // Take care of clock() wrapping around
@@ -291,11 +282,7 @@ void MFExpand(MiniFrame* that) {
         // If this transition is expandable
         const MFTransition* const trans = 
           MFWorldTransition(worldToExpand, iTrans);
-        if (MFTransitionIsExpandable(trans)
-#if MF_USEMONTECARLO
-          && (thresholdMonteCarlo >= 1.0 || rnd() < thresholdMonteCarlo)
-#endif
-          ) {
+        if (MFTransitionIsExpandable(trans)) {
           // Expand through this transition
           MFModelStatus status = 
             MFWorldComputeTransition(worldToExpand, iTrans);
@@ -332,6 +319,9 @@ void MFExpand(MiniFrame* that) {
             } else {
 #endif
               // Add the world to the set of worlds to expand 
+#if MF_EXPANSIONTYPE == MF_EXPANSIONTYPE_BYDEPTH_RANDOMWALK
+              that->_expByDepthAppendPos = iTrans;
+#endif
               MFAddWorldToExpand(that, expandedWorld);
 #if MF_USEPRUNING
             }
@@ -352,21 +342,21 @@ void MFExpand(MiniFrame* that) {
 #endif
         }
       }
-      // If all the expandable transitions have been expanded
-      if (MFWorldGetNbTransExpandable(worldToExpand) == 0) {
-        // Move the expanded world from the worlds to expands to the 
-        // computed worlds
-        MFAddWorldToComputed(that, worldToExpand);
-        moved = GSetIterRemoveElem(&iter);
-      }
+      // Move the expanded world from the worlds to expands to the 
+      // computed worlds
+      MFAddWorldToComputed(that, worldToExpand);
       // Update the total time used from beginning of expansion 
       timeUsed = 
         ((double)(clock() - clockStart)) / MF_MILLISECTOCLOCKS;
       // Update backward the forecast values for each transitions 
       // leading to the expanded world according to its new transitions
+#if MF_REUSEWORLD == true
       GSet updatedWorld = GSetCreateStatic();
       MFUpdateForecastValues(that, worldToExpand, 0, &updatedWorld);
       GSetFlush(&updatedWorld);
+#else
+      MFUpdateForecastValues(that, worldToExpand, 0, NULL);
+#endif
     }
     // Declare a variable to memorize the time at the end of one
     // step of expansion
@@ -380,16 +370,7 @@ void MFExpand(MiniFrame* that) {
     // Update the total time used from beginning of expansion 
     timeUsed = 
       ((double)(clockEndLoop - clockStart)) / MF_MILLISECTOCLOCKS;
-#if MF_EXPANSIONTYPE == 0
-    // If we have reached the beginning  of the set of worlds to expand
-    // Try again from the end in case we would have added world
-    // behind the iter position
-    if (GSetIterIsLast(&iter))
-      GSetIterReset(&iter);
-#endif    
-  } while (timeUsed + maxTimeOneStep < MFGetMaxTimeExpansion(that) &&
-    (moved || GSetIterStep(&iter)) &&
-    timeUsed >= 0.0);
+  }
 #if MF_USETELEMETRY
   // Update the total time used from beginning of expansion 
   timeUsed = ((double)(clock() - clockStart)) / MF_MILLISECTOCLOCKS;
@@ -754,16 +735,23 @@ void MFUpdateForecastValues(MiniFrame* const that,
     sprintf(MiniFrameErr->_msg, "'world' is null");
     PBErrCatch(MiniFrameErr);
   }
+#if MF_REUSEWORLD == true
   if (updatedWorld == NULL) {
     MiniFrameErr->_type = PBErrTypeNullPointer;
     sprintf(MiniFrameErr->_msg, "'updatedWorld' is null");
     PBErrCatch(MiniFrameErr);
   }
 #endif
+#endif
   // If the world has not been updated yet and has ancestor
-  if (GSetNbElem(MFWorldSources(world)) > 0 &&
-    GSetFirstElem(updatedWorld, world) == NULL) {
+  if (GSetNbElem(MFWorldSources(world)) > 0
+#if MF_REUSEWORLD == true
+    && GSetFirstElem(updatedWorld, world) == NULL
+#endif
+    ) {
+#if MF_REUSEWORLD == true
     GSetAppend(updatedWorld, (void*)world);
+#endif
     // Get the sente of the world
     int sente = MFModelStatusGetSente(MFWorldStatus(world));
     // Search the best transition of the world
@@ -797,9 +785,11 @@ void MFUpdateForecastValues(MiniFrame* const that,
           delayPenalty + 1, updatedWorld);
       }
     } while (GSetIterStep(&iter));
+#if MF_REUSEWORLD == true
     // Remove the world for the set of visited world to allow
     // another path to reupdate it later
     GSetRemoveFirst(updatedWorld, (void*)world);
+#endif
   }
 }
 
@@ -967,7 +957,7 @@ void MFSetCurWorld(MiniFrame* const that,
         (GSetNbElem(MFWorldSources(world)) == 0 || 
         MFModelStatusIsDisposable(MFWorldStatus(world), 
         MFWorldStatus(MFCurWorld(that))))) {
-        // Remove it from the set of worlds to expand
+        // Remove it from the set of computed worlds
         moved = GSetIterRemoveElem(&iter);
         // Free this world
         MFWorldFree(&world);
@@ -1215,12 +1205,18 @@ void MFAddWorldToExpand(MiniFrame* const that, \
     PBErrCatch(MiniFrameErr);
   }
 #endif
-#if MF_EXPANSIONTYPE == 0
+#if MF_EXPANSIONTYPE == MF_EXPANSIONTYPE_BYVALUE
   GSetAddSort(&(that->_worldsToExpand), (MFWorld*)world, 
     MFWorldGetValue(world, 
     MFModelStatusGetSente(MFWorldStatus(world))));
 #endif
-#if MF_EXPANSIONTYPE == 1
+#if MF_EXPANSIONTYPE == MF_EXPANSIONTYPE_BYWIDTH
   GSetPush(&(that->_worldsToExpand), (MFWorld*)world);  
+#endif
+#if MF_EXPANSIONTYPE == MF_EXPANSIONTYPE_BYDEPTH_RANDOMWALK
+  if (that->_expByDepthAppendPos == 0)
+    GSetAppend(&(that->_worldsToExpand), (MFWorld*)world);  
+  else
+    GSetPush(&(that->_worldsToExpand), (MFWorld*)world);  
 #endif
 }

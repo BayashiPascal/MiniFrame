@@ -21,17 +21,15 @@
 #define MF_DEFAULTTIMEEXPANSION 100
 // time_ms = clock() / MF_MILLISECTOCLOCKS
 #define MF_MILLISECTOCLOCKS (CLOCKS_PER_SEC * 0.001) 
-// Default number of transitions per world above which the MonteCarlo
-// algorithm is activated during expansion
-#define MF_NBTRANSMONTECARLO 100
 // Default value for pruning during expansion
 #define MF_PRUNINGDELTAVAL 1000.0
 // Default maximum depth of expansion
 #define MF_DEFAULTMAXDEPTHEXP 1000 
-// Expansion type (0: by value, 1: by width)
-#define MF_EXPANSIONTYPE 1
-// Use of MonteCarlo
-#define MF_USEMONTECARLO true
+// Expansion type
+#define MF_EXPANSIONTYPE_BYVALUE 0
+#define MF_EXPANSIONTYPE_BYWIDTH 1
+#define MF_EXPANSIONTYPE_BYDEPTH_RANDOMWALK 2
+#define MF_EXPANSIONTYPE MF_EXPANSIONTYPE_BYWIDTH
 // Use of pruning
 #define MF_USEPRUNING true
 // Use telemetry
@@ -39,6 +37,8 @@
 // Reuse world
 #define MF_REUSEWORLD true
 // Use of depth limit
+// TODO: Doesn't work, the world get dropped from teh set of worlds to 
+// expand but nothing is done, so the reference to the world is lost
 #define MF_LIMITDEPTH true
  
 // =========== Interface with the model implementation =============
@@ -102,15 +102,16 @@ typedef struct MiniFrame {
   clock_t _startExpandClock;
   // Maximum depth during expansion, if -1 there is no limit
   int _maxDepthExp;
-  // Number of transitions above which the Monte Carlo algorithm is 
-  // activated during expansion
-  int _nbTransMonteCarlo;
   // Value for pruning during expansion
   float _pruningDeltaVal;
   // Nb of world not found in MFSetCurWorld
   int _nbWorldNotFound;
   // Max depth reached during last MFExpand
   int _maxDepthExpReached;
+#if MF_EXPANSIONTYPE == MF_EXPANSIONTYPE_BYDEPTH_RANDOMWALK
+  // Internal flag
+  int _expByDepthAppendPos;
+#endif
 } MiniFrame;
 
 // ================ Functions declaration ====================
@@ -397,22 +398,6 @@ void MFSetMaxDepthExp(MiniFrame* const that, const int depth);
 inline
 #endif
 MFExpansionType MFGetExpansionType(const MiniFrame* const that);
-
-#if MF_USEMONTECARLO
-// Set the nb of transitions to activate MonteCarlo during expansion
-// for the MiniFrame 'that' to 'nb'
-#if BUILDMODE != 0
-inline
-#endif
-void MFSetNbTransMonteCarlo(MiniFrame* const that, const int nb);
-#endif
-
-// Get the nb of transitions to activate MonteCarlo during expansion
-// for the MiniFrame 'that'
-#if BUILDMODE != 0
-inline
-#endif
-int MFGetNbTransMonteCarlo(const MiniFrame* const that);
 
 // Return true if the MFTransition is expanded, false else
 #if BUILDMODE != 0
