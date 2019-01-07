@@ -29,6 +29,7 @@
 #define MF_EXPANSIONTYPE_BYVALUE 0
 #define MF_EXPANSIONTYPE_BYWIDTH 1
 #define MF_EXPANSIONTYPE_BYDEPTH_RANDOMWALK 2
+#define MF_EXPANSIONTYPE_MONTECARLOTREESEARCH 3
 #define MF_EXPANSIONTYPE MF_EXPANSIONTYPE_BYWIDTH
 // Use of pruning
 #define MF_USEPRUNING true
@@ -106,6 +107,8 @@ typedef struct MiniFrame {
   float _pruningDeltaVal;
   // Nb of world not found in MFSetCurWorld
   int _nbWorldNotFound;
+  // Nb of tries in the MCTS
+  int _nbTryMTCS;
   // Max depth reached during last MFExpand
   int _maxDepthExpReached;
 #if MF_EXPANSIONTYPE == MF_EXPANSIONTYPE_BYDEPTH_RANDOMWALK
@@ -124,6 +127,10 @@ MiniFrame* MiniFrameCreate(const MFModelStatus* const initStatus);
 // Create a new MFWorld with a copy of the MFModelStatus 'status'
 // Return the new MFWorld
 MFWorld* MFWorldCreate(const MFModelStatus* const status);
+
+// Create a new static MFWorld with a copy of the MFModelStatus 'status'
+// Return the new MFWorld
+MFWorld MFWorldCreateStatic(const MFModelStatus* const status);
 
 // Create a new static MFTransition for the MFWorld 'world' with the
 // MFModelTransition 'transition'

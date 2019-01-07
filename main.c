@@ -452,6 +452,8 @@ void UnitTestMiniFrameFullExample() {
     MFSetStartExpandClock(mf, clock());
     // Correct the current world in the MiniFrame
     MFSetCurWorld(mf, &curWorld);
+    // Expand
+    MFExpand(mf);
     // Display the current world
     printf("mf(");
     MFModelStatusPrint(MFWorldStatus(MFCurWorld(mf)), stdout);
@@ -460,11 +462,9 @@ void UnitTestMiniFrameFullExample() {
     printf(")\n");
     MFWorldTransPrintln(MFCurWorld(mf), stdout);  
     /*printf("--- start of best story ---\n");
-    MFWorldPrintBestStoryln(MFCurWorld(mf), 0, stdout, mf);
-    printf("--- end of best story ---\n");
-    printf("\n");*/
-    // Expand
-    MFExpand(mf);
+    MFWorldPrintBestStoryln(MFCurWorld(mf), 0, stdout);
+    printf("--- end of best story ---\n");*/
+    printf("\n");
     // Get best transition
     const MFModelTransition* bestTrans = MFBestTransition(mf, 0);
     if (bestTrans != NULL) {
