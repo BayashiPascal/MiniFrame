@@ -14,7 +14,7 @@ include $(MAKEFILE_INC)
 MF_MODEL_PATH=$(ROOT_DIR)/MiniFrame/Examples/Oware
 
 # Include directories
-MODEL_INC_DIR=-I$(ROOT_DIR)/PBErr -I$(ROOT_DIR)/GenAlg -I$(ROOT_DIR)/NeuraNet -I$(ROOT_DIR)/PBMath -I$(ROOT_DIR)/PBJson -I$(ROOT_DIR)/GTree  -I$(ROOT_DIR)/GSet -I$(ROOT_DIR)/ELORank
+MODEL_INC_DIR=-I$(ROOT_DIR)/PBErr -I$(ROOT_DIR)/GenAlg -I$(ROOT_DIR)/NeuraNet -I$(ROOT_DIR)/PBMath -I$(ROOT_DIR)/PBJson -I$(ROOT_DIR)/GTree  -I$(ROOT_DIR)/GSet -I$(ROOT_DIR)/ELORank -I$(ROOT_DIR)/ResPublish -I$(ROOT_DIR)/PBCExtension
 
 # Rules to make the executable
 main: \
@@ -22,11 +22,12 @@ main: \
 		main.o \
 		miniframe-model.o \
 		neuranet.o \
+		respublish.o \
 		genalg.o \
 		elorank.o \
 		$(miniframe_EXE_DEP) \
 		$(miniframe_DEP)
-	$(COMPILER) `echo "$(miniframe_EXE_DEP) main.o" | tr ' ' '\n' | sort -u` miniframe-model.o neuranet.o genalg.o elorank.o $(LINK_ARG) $(miniframe_LINK_ARG) -o main; rm $(miniframe_DIR)/miniframe-model.h; rm $(miniframe_DIR)/miniframe-inline-model.c
+	$(COMPILER) `echo "$(miniframe_EXE_DEP) main.o" | tr ' ' '\n' | sort -u` miniframe-model.o neuranet.o respublish.o genalg.o elorank.o $(LINK_ARG) $(miniframe_LINK_ARG) -o main; rm $(miniframe_DIR)/miniframe-model.h; rm $(miniframe_DIR)/miniframe-inline-model.c
 	
 main.o: \
 		main.c \

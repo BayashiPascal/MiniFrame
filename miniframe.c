@@ -44,7 +44,7 @@ bool MFTransitionUpdateValues(MFTransition* const that, const float* val);
 
 // Pop a MFTransition from the sources of the MFWorld 'that'
 #if BUILDMODE != 0
-inline
+static inline
 #endif
 MFTransition* MFWorldPopSource(MFWorld* const that);
 
@@ -1241,7 +1241,7 @@ void MFWorldRemoveSource(MFWorld* const that,
 
 // Pop a MFTransition from the sources of the MFWorld 'that'
 #if BUILDMODE != 0
-inline
+static inline
 #endif
 MFTransition* MFWorldPopSource(MFWorld* const that) {
 #if BUILDMODE == 0

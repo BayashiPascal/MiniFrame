@@ -149,32 +149,32 @@ void MFTransitionFreeStatic(MFTransition* that);
 
 // Get the current MFWorld of the MiniFrame 'that'
 #if BUILDMODE != 0
-inline
+static inline
 #endif
 const MFWorld* MFCurWorld(const MiniFrame* const that);
 
 // Get the GSet of computed MFWorlds of the MiniFrame 'that'
 #if BUILDMODE != 0
-inline
+static inline
 #endif
 const GSet* MFWorldsComputed(const MiniFrame* const that);
 
 // Get the GSet of worlds to expand of the MiniFrame 'that'
 #if BUILDMODE != 0
-inline
+static inline
 #endif
 const GSet* MFWorldsToExpand(const MiniFrame* const that);
 
 // Get the nb of world To expande of the MiniFrame 'that'
 #if BUILDMODE != 0
-inline
+static inline
 #endif
 int MFGetNbWorldsToExpand(const MiniFrame* const that);
 
 // Return true if the expansion algorithm looks in previously 
 // computed worlds for same world to reuse, else false
 #if BUILDMODE != 0
-inline
+static inline
 #endif
 bool MFIsWorldReusable(const MiniFrame* const that);
 
@@ -182,7 +182,7 @@ bool MFIsWorldReusable(const MiniFrame* const that);
 // Set the flag controling if the expansion algorithm looks in 
 // previously computed worlds for same world to reuse to 'reuse'
 #if BUILDMODE != 0
-inline
+static inline
 #endif
 void MFSetWorldReusable(MiniFrame* const that, const bool reuse);
 #endif
@@ -191,7 +191,7 @@ void MFSetWorldReusable(MiniFrame* const that, const bool reuse);
 // MiniFrame 'that', ordered by the world's value from the pov of 
 // actor 'iActor'
 #if BUILDMODE != 0
-inline
+static inline
 #endif
 void MFAddWorldToComputed(MiniFrame* const that, \
   const MFWorld* const world);
@@ -203,38 +203,38 @@ void MFAddWorldToExpand(MiniFrame* const that, \
   
 // Get the time limit for expansion of the MiniFrame 'that'
 #if BUILDMODE != 0
-inline
+static inline
 #endif
 float MFGetMaxTimeExpansion(const MiniFrame* const that);
 
 // Get the time unused during last expansion of the MiniFrame 'that'
 #if BUILDMODE != 0
-inline
+static inline
 #endif
 float MFGetTimeUnusedExpansion(const MiniFrame* const that);
 
 // Get the nb of computed worlds of the MiniFrame 'that'
 #if BUILDMODE != 0
-inline
+static inline
 #endif
 int MFGetNbComputedWorlds(const MiniFrame* const that);
 
 // Get the percentage of resued world of the MiniFrame 'that' during 
 // the last MFEpxand()
 #if BUILDMODE != 0
-inline
+static inline
 #endif
 float MFGetPercWorldReused(const MiniFrame* const that);
 
 // Get the clock considered has start during expansion
 #if BUILDMODE != 0
-inline
+static inline
 #endif
 clock_t MFGetStartExpandClock(const MiniFrame* const that);
 
 // Set the clock considered has start during expansion to 'c'
 #if BUILDMODE != 0
-inline
+static inline
 #endif
 void MFSetStartExpandClock(MiniFrame* const that, clock_t c);
 
@@ -243,14 +243,14 @@ void MFSetStartExpandClock(MiniFrame* const that, clock_t c);
 // The time is measured with the function clock(), see "man clock"
 // for details
 #if BUILDMODE != 0
-inline
+static inline
 #endif
 void MFSetMaxTimeExpansion(MiniFrame* const that, \
   const float timeLimit);
 
 // Return the MFModelStatus of the MFWorld 'that'
 #if BUILDMODE != 0
-inline
+static inline
 #endif
 const MFModelStatus* MFWorldStatus(const MFWorld* const that);
 
@@ -267,7 +267,7 @@ float MFWorldGetForecastValue(const MFWorld* const that,
 
 // Get the number of transition for the MFWorld 'that'
 #if BUILDMODE != 0
-inline
+static inline
 #endif
 int MFWorldGetNbTrans(const MFWorld* const that);
 
@@ -276,21 +276,21 @@ int MFWorldGetNbTransExpandable(const MFWorld* const that);
 
 // Get the MFWorld which the MFTransition 'that' is leading to
 #if BUILDMODE != 0
-inline
+static inline
 #endif
 const MFWorld* MFTransitionToWorld(const MFTransition* const that);
 
 // Set the MFWorld to which the MFTransition 'that' is leading to 
 // 'world'
 #if BUILDMODE != 0
-inline
+static inline
 #endif
 void MFTransitionSetToWorld(MFTransition* const that, 
   MFWorld* const world);
 
 // Get the MFWorld which the MFTransition 'that' is coming from
 #if BUILDMODE != 0
-inline
+static inline
 #endif
 const MFWorld* MFTransitionFromWorld(const MFTransition* const that);
 
@@ -300,27 +300,27 @@ bool MFTransitionIsExpandable(const MFTransition* const that);
 
 // Get the 'iTrans' MFTransition of the MFWorld 'that'
 #if BUILDMODE != 0
-inline
+static inline
 #endif
 const MFTransition* MFWorldTransition(const MFWorld* const that, 
   const int iTrans);
 
 // Get the set of MFTransition reaching the MFWorld 'that'
 #if BUILDMODE != 0
-inline
+static inline
 #endif
 const GSet* MFWorldSources(const MFWorld* const that);
 
 // Return the array of values of the MFWorld 'that' for each actor
 #if BUILDMODE != 0
-inline
+static inline
 #endif
 const float* MFWorldValues(const MFWorld* const that);
 
 // Compute the MFModelStatus resulting from the 'iTrans' MFTransition 
 // of the MFWorld 'that'
 #if BUILDMODE != 0
-inline
+static inline
 #endif
 MFModelStatus MFWorldComputeTransition(const MFWorld* const that, 
   const int iTrans);
@@ -331,7 +331,7 @@ float MFWorldGetForecastValue(const MFWorld* const that, int iActor);
 // Set the value of the MFTransition 'that' for the actor 'iActor' to 
 // 'val'
 #if BUILDMODE != 0
-inline
+static inline
 #endif
 void MFTransitionSetValue(MFTransition* const that, const int iActor,
   const float val);
@@ -339,7 +339,7 @@ void MFTransitionSetValue(MFTransition* const that, const int iActor,
 // Return the value of the MFTransition 'that' for the 
 // actor 'iActor'.
 #if BUILDMODE != 0
-inline
+static inline
 #endif
 float MFTransitionGetValue(const MFTransition* const that, 
   const int iActor);
@@ -347,7 +347,7 @@ float MFTransitionGetValue(const MFTransition* const that,
 // Return the value of the MFWorld 'that' for the 
 // actor 'iActor'.
 #if BUILDMODE != 0
-inline
+static inline
 #endif
 float MFWorldGetValue(const MFWorld* const that, const int iActor);
 
@@ -385,7 +385,7 @@ void MFWorldSetValues(MFWorld* const that, const float* const values);
 
 // Return the max depth during expansion for the MiniFrame 'that'
 #if BUILDMODE != 0
-inline
+static inline
 #endif
 int MFGetMaxDepthExp(const MiniFrame* const that);
 
@@ -395,20 +395,20 @@ int MFGetMaxDepthExp(const MiniFrame* const that);
 // If the expansion type is not by width the max expansion depth is 
 // ignored during expansion
 #if BUILDMODE != 0
-inline
+static inline
 #endif
 void MFSetMaxDepthExp(MiniFrame* const that, const int depth);
 #endif
 
 // Return the type of expansion for the MiniFrame 'that'
 #if BUILDMODE != 0
-inline
+static inline
 #endif
 MFExpansionType MFGetExpansionType(const MiniFrame* const that);
 
 // Return true if the MFTransition is expanded, false else
 #if BUILDMODE != 0
-inline
+static inline
 #endif
 bool MFTransitionIsExpanded(const MFTransition* const that);
 
@@ -416,26 +416,26 @@ bool MFTransitionIsExpanded(const MFTransition* const that);
 // Set the pruning threshold during expansion for the MiniFrame 'that' 
 // to 'val'
 #if BUILDMODE != 0
-inline
+static inline
 #endif
 void MFSetPruningDeltaVal(MiniFrame* const that, const float val);
 #endif
 
 // Get the pruning threshold during expansion for the MiniFrame 'that'
 #if BUILDMODE != 0
-inline
+static inline
 #endif
 float MFGetPruningDeltaVal(const MiniFrame* const that);
 
 // Get the nb of worlds not found during MFSetCurWorld
 #if BUILDMODE != 0
-inline
+static inline
 #endif
 int MFGetNbWorldNotFound(const MiniFrame* const that);
 
 // Get the max depth reached during last call of MFExpand
 #if BUILDMODE != 0
-inline
+static inline
 #endif
 int MFGetMaxDepthExpReached(const MiniFrame* const that);
 
